@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../wigets/MenuBar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,14 +12,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('GrandChess'),
-      ),
-      body: const Center(
-        child: Text(
-          'Welcome to GrandChess!',
-        ),
-      ),
-    );
+        backgroundColor: Colors.grey,
+        body: Column(
+          children: [menuBar(context)],
+        ));
   }
 }
