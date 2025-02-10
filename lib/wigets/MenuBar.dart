@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grand_chess/wigets/Board.dart';
+import 'package:grand_chess/pages/GamePage.dart';
 
 Widget menuBar(context) {
   return Container(
@@ -37,12 +37,7 @@ Widget play(context) {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => Scaffold(
-                                  backgroundColor: Colors.grey,
-                                  body: Column(
-                                    children: [menuBar(context), createBoard()],
-                                  ),
-                                )));
+                            builder: (context) => createGame(context)));
                   },
                 )
               ],
