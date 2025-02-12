@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
+import 'package:grand_chess/wigets/Pieces.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
@@ -87,11 +88,9 @@ class BoardMove extends State<Board> {
           selectedCol = col;
         }
       } else {
-        board[row][col] = board[selectedRow!][selectedCol!];
-        board[selectedRow!][selectedCol!] = null;
-
-        selectedCol = null;
+        checkLegalMove(board, selectedRow!, selectedCol!, row, col);
         selectedRow = null;
+        selectedCol = null;
       }
     });
   }
