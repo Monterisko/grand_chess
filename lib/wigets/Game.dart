@@ -1,35 +1,30 @@
-void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
+bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
     int row, int col) {
   if (board[selectedRow][selectedCol] == "white_pawn") {
     if (selectedRow == 6) {
       if (row == selectedRow - 1 && col == selectedCol) {
         if (board[row][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow - 2 && col == selectedCol) {
         if (board[row][col] == null && board[row + 1][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow - 1 &&
           (col == selectedCol + 1 || col == selectedCol - 1)) {
         if (board[row][col] != null && !board[row][col]!.startsWith("white")) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     } else {
       if (row == selectedRow - 1 && col == selectedCol) {
         if (board[row][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow - 1 &&
           (col == selectedCol + 1 || col == selectedCol - 1)) {
         if (board[row][col] != null && !board[row][col]!.startsWith("white")) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -38,32 +33,27 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
     if (selectedRow == 1) {
       if (row == selectedRow + 1 && col == selectedCol) {
         if (board[row][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow + 2 && col == selectedCol) {
         if (board[row][col] == null && board[row - 1][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow + 1 &&
           (col == selectedCol + 1 || col == selectedCol - 1)) {
         if (board[row][col] != null && !board[row][col]!.startsWith("black")) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     } else {
       if (row == selectedRow + 1 && col == selectedCol) {
         if (board[row][col] == null) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       } else if (row == selectedRow + 1 &&
           (col == selectedCol + 1 || col == selectedCol - 1)) {
         if (board[row][col] != null && !board[row][col]!.startsWith("black")) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -88,9 +78,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       while (rowDup != selectedRow || colDup != selectedCol) {
         if (board[rowDup][colDup] != null) {
           flag = false;
-          print(
-              "board[rowDup][colDup]: ${board[rowDup][colDup]}, rowdup: $rowDup, coldup: $colDup");
-          return;
+          return false;
         }
         if (rowDup > selectedRow) {
           rowDup--;
@@ -102,14 +90,12 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
           colDup++;
         }
       }
-      print("flag: $flag");
       if (flag) {
         if (board[row][col] == null ||
             (board[selectedRow][selectedCol]!.startsWith("white")
                 ? !board[row][col]!.startsWith("white")
                 : !board[row][col]!.startsWith("black"))) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -122,8 +108,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
           (board[selectedRow][selectedCol]!.startsWith("white")
               ? !board[row][col]!.startsWith("white")
               : !board[row][col]!.startsWith("black"))) {
-        board[row][col] = board[selectedRow][selectedCol];
-        board[selectedRow][selectedCol] = null;
+        return true;
       }
     } else if ((row == selectedRow + 1 || row == selectedRow - 1) &&
         (col == selectedCol + 2 || col == selectedCol - 2)) {
@@ -131,8 +116,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
           (board[selectedRow][selectedCol]!.startsWith("white")
               ? !board[row][col]!.startsWith("white")
               : !board[row][col]!.startsWith("black"))) {
-        board[row][col] = board[selectedRow][selectedCol];
-        board[selectedRow][selectedCol] = null;
+        return true;
       }
     }
   }
@@ -157,7 +141,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       while (rowDup != selectedRow || colDup != selectedCol) {
         if (board[rowDup][colDup] != null) {
           flag = false;
-          return;
+          return false;
         }
         if (rowDup > selectedRow && colDup > selectedCol) {
           rowDup--;
@@ -178,8 +162,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
             (board[selectedRow][selectedCol]!.startsWith("white")
                 ? !board[row][col]!.startsWith("white")
                 : !board[row][col]!.startsWith("black"))) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -204,7 +187,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       while (rowDup != selectedRow || colDup != selectedCol) {
         if (board[rowDup][colDup] != null) {
           flag = false;
-          return;
+          return false;
         }
         if (rowDup > selectedRow) {
           rowDup--;
@@ -221,8 +204,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
             (board[selectedRow][selectedCol]!.startsWith("white")
                 ? !board[row][col]!.startsWith("white")
                 : !board[row][col]!.startsWith("black"))) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -234,7 +216,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       while (rowDup != selectedRow || colDup != selectedCol) {
         if (board[rowDup][colDup] != null) {
           flag = false;
-          return;
+          return false;
         }
         if (rowDup > selectedRow && colDup > selectedCol) {
           rowDup--;
@@ -255,8 +237,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
             (board[selectedRow][selectedCol]!.startsWith("white")
                 ? !board[row][col]!.startsWith("white")
                 : !board[row][col]!.startsWith("black"))) {
-          board[row][col] = board[selectedRow][selectedCol];
-          board[selectedRow][selectedCol] = null;
+          return true;
         }
       }
     }
@@ -273,8 +254,7 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
           (board[selectedRow][selectedCol]!.startsWith("white")
               ? !board[row][col]!.startsWith("white")
               : !board[row][col]!.startsWith("black"))) {
-        board[row][col] = board[selectedRow][selectedCol];
-        board[selectedRow][selectedCol] = null;
+        return true;
       }
     }
   }
@@ -282,40 +262,119 @@ void checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       selectedRow == 7 &&
       selectedCol == 4 &&
       row == 7 &&
-      col == 6) {
-    board[7][6] = board[7][4];
-    board[7][4] = null;
-    board[7][5] = board[7][7];
+      col > 4) {
+    for (int i = 5; i < 7; i++) {
+      if (board[7][i] != null) {
+        return false;
+      }
+    }
+    board[7][5] = "white_rook";
     board[7][7] = null;
+    return true;
   }
   if (board[selectedRow][selectedCol] == "black_king" &&
       selectedRow == 0 &&
       selectedCol == 4 &&
       row == 0 &&
       col == 6) {
-    board[0][6] = board[0][4];
-    board[0][4] = null;
-    board[0][5] = board[0][7];
+    for (int i = 5; i < 7; i++) {
+      if (board[0][i] != null) {
+        return false;
+      }
+    }
+    board[0][5] = "black_rook";
     board[0][7] = null;
+    return true;
   }
   if (board[selectedRow][selectedCol] == "white_king" &&
       selectedRow == 7 &&
       selectedCol == 4 &&
       row == 7 &&
       col == 2) {
-    board[7][2] = board[7][4];
-    board[7][4] = null;
-    board[7][3] = board[7][0];
+    for (int i = 1; i < 4; i++) {
+      if (board[7][i] != null) {
+        return false;
+      }
+    }
+    board[7][3] = "white_rook";
     board[7][0] = null;
+    return true;
   }
   if (board[selectedRow][selectedCol] == "black_king" &&
       selectedRow == 0 &&
       selectedCol == 4 &&
       row == 0 &&
       col == 2) {
-    board[0][2] = board[0][4];
-    board[0][4] = null;
-    board[0][3] = board[0][0];
+    for (int i = 1; i < 4; i++) {
+      if (board[0][i] != null) {
+        return false;
+      }
+    }
+    board[0][3] = "black_rook";
     board[0][0] = null;
+    return true;
   }
+  return false;
+}
+
+bool isCheck(List<List<String?>> board, String color) {
+  int kingRow = -1;
+  int kingCol = -1;
+
+  for (int i = 0; i < 8; i++) {
+    for (int j = 0; j < 8; j++) {
+      if (board[i][j] == "${color}_king") {
+        kingRow = i;
+        kingCol = j;
+        break;
+      }
+    }
+  }
+
+  String opponentColor = (color == "white") ? "black" : "white";
+
+  for (int r = 0; r < 8; r++) {
+    for (int c = 0; c < 8; c++) {
+      String? piece = board[r][c];
+
+      if (piece != null && piece.startsWith(opponentColor)) {
+        if (checkLegalMove(board, r, c, kingRow, kingCol)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+bool isCheckMate(List<List<String?>> board, String color) {
+  if (!isCheck(board, color)) {
+    return false;
+  }
+
+  for (int r = 0; r < 8; r++) {
+    for (int c = 0; c < 8; c++) {
+      String? piece = board[r][c];
+
+      if (piece != null && piece.startsWith(color)) {
+        for (int newR = 0; newR < 8; newR++) {
+          for (int newC = 0; newC < 8; newC++) {
+            if (checkLegalMove(board, r, c, newR, newC)) {
+              List<List<String?>> tempBoard =
+                  List.generate(8, (i) => List<String?>.from(board[i]));
+
+              tempBoard[newR][newC] = piece;
+              tempBoard[r][c] = null;
+
+              if (!isCheck(tempBoard, color)) {
+                return false;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return true;
 }

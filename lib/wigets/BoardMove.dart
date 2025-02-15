@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
-import 'package:grand_chess/wigets/Pieces.dart';
+import 'package:grand_chess/wigets/Game.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
@@ -80,17 +80,72 @@ class BoardMove extends State<Board> {
         ));
   }
 
+  String currentTurn = "white";
+
   void onMove(List<List<String?>> board, int row, int col) {
     setState(() {
+      String? move = board[row][col];
+
       if (selectedRow == null && selectedCol == null) {
         if (board[row][col] != null) {
           selectedRow = row;
           selectedCol = col;
+          if (!(currentTurn == "white" &&
+                  board[selectedRow!][selectedCol!]!.startsWith("white")) &&
+              !(currentTurn == "black" &&
+                  board[row][col]!.startsWith("black"))) {
+            selectedRow = null;
+            selectedCol = null;
+          }
         }
       } else {
-        checkLegalMove(board, selectedRow!, selectedCol!, row, col);
-        selectedRow = null;
-        selectedCol = null;
+        if ((currentTurn == "white" &&
+                board[selectedRow!][selectedCol!]!.startsWith("white")) ||
+            (currentTurn == "black" &&
+                board[selectedRow!][selectedCol!]!.startsWith("black"))) {
+          if (row == selectedRow && col == selectedCol) {
+            selectedRow = null;
+            selectedCol = null;
+            return;
+          }
+
+          if (!checkLegalMove(board, selectedRow!, selectedCol!, row, col)) {
+            return;
+          }
+          String? target = board[selectedRow!][selectedCol!];
+
+          board[row][col] = board[selectedRow!][selectedCol!];
+          board[selectedRow!][selectedCol!] = null;
+          if (isCheck(board, currentTurn)) {
+            board[row][col] = move;
+            board[selectedRow!][selectedCol!] = target;
+            return;
+          }
+          if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Koniec gry"),
+                    content: Text("Szach mat"),
+                    actions: [
+                      TextButton(
+                        child: Text("Zamknij"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => Board()));
+                        },
+                      )
+                    ],
+                  );
+                });
+          }
+
+          selectedRow = null;
+          selectedCol = null;
+          currentTurn = currentTurn == "white" ? "black" : "white";
+        }
       }
     });
   }
