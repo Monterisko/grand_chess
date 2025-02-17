@@ -1,3 +1,6 @@
+import 'package:flutter/material.dart';
+import 'package:grand_chess/wigets/BoardMove.dart';
+
 bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
     int row, int col) {
   if (board[selectedRow][selectedCol] == "white_pawn") {
@@ -258,61 +261,67 @@ bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       }
     }
   }
-  if (board[selectedRow][selectedCol] == "white_king" &&
-      selectedRow == 7 &&
-      selectedCol == 4 &&
-      row == 7 &&
-      col > 4) {
-    for (int i = 5; i < 7; i++) {
-      if (board[7][i] != null) {
-        return false;
+  if (BoardMove.castleW || BoardMove.castleB) {
+    if (board[selectedRow][selectedCol] == "white_king" &&
+        selectedRow == 7 &&
+        selectedCol == 4 &&
+        row == 7 &&
+        col > 4) {
+      for (int i = 5; i < 7; i++) {
+        if (board[7][i] != null) {
+          return false;
+        }
       }
+      board[7][5] = "white_rook";
+      board[7][7] = null;
+      BoardMove.castleW = false;
+      return true;
     }
-    board[7][5] = "white_rook";
-    board[7][7] = null;
-    return true;
-  }
-  if (board[selectedRow][selectedCol] == "black_king" &&
-      selectedRow == 0 &&
-      selectedCol == 4 &&
-      row == 0 &&
-      col == 6) {
-    for (int i = 5; i < 7; i++) {
-      if (board[0][i] != null) {
-        return false;
+    if (board[selectedRow][selectedCol] == "black_king" &&
+        selectedRow == 0 &&
+        selectedCol == 4 &&
+        row == 0 &&
+        col == 6) {
+      for (int i = 5; i < 7; i++) {
+        if (board[0][i] != null) {
+          return false;
+        }
       }
+      board[0][5] = "black_rook";
+      board[0][7] = null;
+      BoardMove.castleB = false;
+      return true;
     }
-    board[0][5] = "black_rook";
-    board[0][7] = null;
-    return true;
-  }
-  if (board[selectedRow][selectedCol] == "white_king" &&
-      selectedRow == 7 &&
-      selectedCol == 4 &&
-      row == 7 &&
-      col == 2) {
-    for (int i = 1; i < 4; i++) {
-      if (board[7][i] != null) {
-        return false;
+    if (board[selectedRow][selectedCol] == "white_king" &&
+        selectedRow == 7 &&
+        selectedCol == 4 &&
+        row == 7 &&
+        col == 2) {
+      for (int i = 1; i < 4; i++) {
+        if (board[7][i] != null) {
+          return false;
+        }
       }
+      board[7][3] = "white_rook";
+      board[7][0] = null;
+      BoardMove.castleW = false;
+      return true;
     }
-    board[7][3] = "white_rook";
-    board[7][0] = null;
-    return true;
-  }
-  if (board[selectedRow][selectedCol] == "black_king" &&
-      selectedRow == 0 &&
-      selectedCol == 4 &&
-      row == 0 &&
-      col == 2) {
-    for (int i = 1; i < 4; i++) {
-      if (board[0][i] != null) {
-        return false;
+    if (board[selectedRow][selectedCol] == "black_king" &&
+        selectedRow == 0 &&
+        selectedCol == 4 &&
+        row == 0 &&
+        col == 2) {
+      for (int i = 1; i < 4; i++) {
+        if (board[0][i] != null) {
+          return false;
+        }
       }
+      board[0][3] = "black_rook";
+      board[0][0] = null;
+      BoardMove.castleB = false;
+      return true;
     }
-    board[0][3] = "black_rook";
-    board[0][0] = null;
-    return true;
   }
   return false;
 }
@@ -377,4 +386,51 @@ bool isCheckMate(List<List<String?>> board, String color) {
   }
 
   return true;
+}
+
+Future<String?> showPromotionDialog(BuildContext context, String color) async {
+  return await showDialog<String>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text("Promocja", textAlign: TextAlign.center),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Image.asset("assets/${color}_queen.png"),
+                  iconSize: 30,
+                  onPressed: () => Navigator.pop(context, "${color}_queen"),
+                ),
+                IconButton(
+                  icon: Image.asset("assets/${color}_rook.png"),
+                  iconSize: 30,
+                  onPressed: () => Navigator.pop(context, "${color}_rook"),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: Image.asset("assets/${color}_bishop.png"),
+                  iconSize: 30,
+                  onPressed: () => Navigator.pop(context, "${color}_bishop"),
+                ),
+                IconButton(
+                  icon: Image.asset("assets/${color}_knight.png"),
+                  iconSize: 30,
+                  onPressed: () => Navigator.pop(context, "${color}_knight"),
+                ),
+              ],
+            )
+          ],
+        ),
+      );
+    },
+  );
 }

@@ -81,8 +81,10 @@ class BoardMove extends State<Board> {
   }
 
   String currentTurn = "white";
+  static bool castleW = true;
+  static bool castleB = true;
 
-  void onMove(List<List<String?>> board, int row, int col) {
+  Future<void> onMove(List<List<String?>> board, int row, int col) async {
     setState(() {
       String? move = board[row][col];
 
@@ -141,12 +143,24 @@ class BoardMove extends State<Board> {
                   );
                 });
           }
-
-          selectedRow = null;
-          selectedCol = null;
-          currentTurn = currentTurn == "white" ? "black" : "white";
         }
+        selectedRow = null;
+        selectedCol = null;
+        currentTurn = currentTurn == "white" ? "black" : "white";
       }
     });
+    if ((board[row][col] == "white_pawn" && row == 0) ||
+        (board[row][col] == "black_pawn" && row == 7)) {
+      // Najpierw wykonujemy asynchroniczne działanie (wybór figury)
+      showPromotionDialog(context, board[row][col]!.split("_")[0])
+          .then((promotedPiece) {
+        if (promotedPiece != null) {
+          // Dopiero teraz aktualizujemy stan
+          setState(() {
+            board[row][col] = promotedPiece;
+          });
+        }
+      });
+    }
   }
 }
