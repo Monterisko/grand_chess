@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
+import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/wigets/MoveList.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
@@ -12,7 +14,10 @@ class BoardMove extends State<Board> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey,
-      body: Column(children: [menuBar(context), createBoard()]),
+      body: Column(children: [
+        menuBar(context),
+        Row(children: [createBoard(), Expanded(child: displayMoves())])
+      ]),
     );
   }
 
@@ -144,6 +149,15 @@ class BoardMove extends State<Board> {
                 });
           }
         }
+        addMove(Move(
+            isCapture: move != null,
+            piece: Image.asset(
+              "assets/${board[row][col]}.png",
+              scale: 1.8,
+            ),
+            from:
+                "${String.fromCharCode(97 + selectedCol!)}${8 - selectedRow!}",
+            to: "${String.fromCharCode(97 + col)}${8 - row}"));
         selectedRow = null;
         selectedCol = null;
         currentTurn = currentTurn == "white" ? "black" : "white";
@@ -151,11 +165,9 @@ class BoardMove extends State<Board> {
     });
     if ((board[row][col] == "white_pawn" && row == 0) ||
         (board[row][col] == "black_pawn" && row == 7)) {
-      // Najpierw wykonujemy asynchroniczne działanie (wybór figury)
       showPromotionDialog(context, board[row][col]!.split("_")[0])
           .then((promotedPiece) {
         if (promotedPiece != null) {
-          // Dopiero teraz aktualizujemy stan
           setState(() {
             board[row][col] = promotedPiece;
           });
