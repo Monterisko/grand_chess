@@ -4,11 +4,16 @@ import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/wigets/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/bots/BotEasy.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
-  int? selectedRow;
-  int? selectedCol;
+  int? fromRow;
+  int? fromCol;
+  late BotEasy botEasy;
+  bool isAgainstAI;
+
+  BoardMove({required this.isAgainstAI});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +30,9 @@ class BoardMove extends State<Board> {
   void initState() {
     super.initState();
     initializeBoard();
+    if (isAgainstAI) {
+      botEasy = BotEasy(board: board, makeMove: makeMove);
+    }
   }
 
   void initializeBoard() {
@@ -62,21 +70,23 @@ class BoardMove extends State<Board> {
           gridDelegate:
               SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
           itemBuilder: (BuildContext context, int index) {
-            int row = index ~/ 8;
-            int col = index % 8;
-            bool isSelected = (row == selectedRow && col == selectedCol);
+            int toRow = index ~/ 8;
+            int toCol = index % 8;
+            bool isSelected = (toRow == fromRow && toCol == fromCol);
             return GestureDetector(
-              onTap: () => onMove(board, row, col),
+              onTap: () => isAgainstAI
+                  ? onMoveWithAI(board, toRow, toCol)
+                  : onMove(board, toRow, toCol),
               child: Container(
                 decoration: BoxDecoration(
                     color: isSelected
                         ? Colors.green
-                        : (row + col) % 2 == 0
+                        : (toRow + toCol) % 2 == 0
                             ? Colors.white
-                            : Colors.brown[400],
+                            : const Color.fromARGB(255, 159, 86, 60),
                     border: Border.all(color: Colors.black)),
-                child: board[row][col] != null
-                    ? Image.asset('assets/${board[row][col]}.png')
+                child: board[toRow][toCol] != null
+                    ? Image.asset('assets/${board[toRow][toCol]}.png')
                     : null,
               ),
             );
@@ -89,52 +99,51 @@ class BoardMove extends State<Board> {
   static bool castleW = true;
   static bool castleB = true;
   Move previousMove = Move(from: "", to: "", piece: Image.asset(""));
-
-  Future<void> onMove(List<List<String?>> board, int row, int col) async {
+  Future<void> onMove(List<List<String?>> board, int toRow, int toCol) async {
     setState(() {
-      String? move = board[row][col];
-
-      if (selectedRow == null && selectedCol == null) {
-        if (board[row][col] != null) {
-          selectedRow = row;
-          selectedCol = col;
+      String? move = board[toRow][toCol];
+      if (fromRow == null && fromCol == null) {
+        if (board[toRow][toCol] != null) {
+          fromRow = toRow;
+          fromCol = toCol;
           if (!(currentTurn == "white" &&
-                  board[selectedRow!][selectedCol!]!.startsWith("white")) &&
+                  board[fromRow!][fromCol!]!.startsWith("white")) &&
               !(currentTurn == "black" &&
-                  board[row][col]!.startsWith("black"))) {
-            selectedRow = null;
-            selectedCol = null;
+                  board[toRow][toCol]!.startsWith("black"))) {
+            fromRow = null;
+            fromCol = null;
           }
         }
       } else {
         if ((currentTurn == "white" &&
-                board[selectedRow!][selectedCol!]!.startsWith("white")) ||
+                board[fromRow!][fromCol!]!.startsWith("white")) ||
             (currentTurn == "black" &&
-                board[selectedRow!][selectedCol!]!.startsWith("black"))) {
-          if (row == selectedRow && col == selectedCol) {
-            selectedRow = null;
-            selectedCol = null;
+                board[fromRow!][fromCol!]!.startsWith("black"))) {
+          if (toRow == fromRow && toCol == fromCol) {
+            fromRow = null;
+            fromCol = null;
             return;
           }
           if (!checkEnPassant(
-              board, selectedRow!, selectedCol!, row, col, previousMove)) {
-            if (!checkLegalMove(board, selectedRow!, selectedCol!, row, col)) {
+              board, fromRow!, fromCol!, toRow, toCol, previousMove)) {
+            if (!checkLegalMove(board, fromRow!, fromCol!, toRow, toCol)) {
               return;
             }
           } else {
-            if (board[selectedRow!][selectedCol!]!.startsWith("white")) {
-              board[row + 1][col] = null;
+            if (board[fromRow!][fromCol!]!.startsWith("white")) {
+              board[toRow + 1][toCol] = null;
             } else {
-              board[row - 1][col] = null;
+              board[toRow - 1][toCol] = null;
             }
           }
-          String? target = board[selectedRow!][selectedCol!];
+          String? target = board[fromRow!][fromCol!];
 
-          board[row][col] = board[selectedRow!][selectedCol!];
-          board[selectedRow!][selectedCol!] = null;
+          board[toRow][toCol] = board[fromRow!][fromCol!];
+          board[fromRow!][fromCol!] = null;
+
           if (isCheck(board, currentTurn)) {
-            board[row][col] = move;
-            board[selectedRow!][selectedCol!] = target;
+            board[toRow][toCol] = move;
+            board[fromRow!][fromCol!] = target;
             return;
           }
           if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
@@ -149,8 +158,12 @@ class BoardMove extends State<Board> {
                         child: Text("Zamknij"),
                         onPressed: () {
                           Navigator.of(context).pop();
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => Board()));
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Board(
+                                        isAgainstAI: false,
+                                      )));
                         },
                       )
                     ],
@@ -160,39 +173,151 @@ class BoardMove extends State<Board> {
         }
         previousMove = Move(
             color: currentTurn,
-            figure: board[row][col]!,
+            figure: board[toRow][toCol]!,
             isCapture: move != null,
             piece: Image.asset(
-              "assets/${board[row][col]}.png",
+              "assets/${board[toRow][toCol]}.png",
               scale: 1.8,
             ),
-            from:
-                "${String.fromCharCode(97 + selectedCol!)}${8 - selectedRow!}",
-            to: "${String.fromCharCode(97 + col)}${8 - row}");
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
         addMove(Move(
             isCapture: move != null,
             piece: Image.asset(
-              "assets/${board[row][col]}.png",
+              "assets/${board[toRow][toCol]}.png",
               scale: 1.8,
             ),
-            from:
-                "${String.fromCharCode(97 + selectedCol!)}${8 - selectedRow!}",
-            to: "${String.fromCharCode(97 + col)}${8 - row}"));
-        selectedRow = null;
-        selectedCol = null;
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
+        fromRow = null;
+        fromCol = null;
         currentTurn = currentTurn == "white" ? "black" : "white";
       }
     });
-    if ((board[row][col] == "white_pawn" && row == 0) ||
-        (board[row][col] == "black_pawn" && row == 7)) {
-      showPromotionDialog(context, board[row][col]!.split("_")[0])
+    if ((board[toRow][toCol] == "white_pawn" && toRow == 0) ||
+        (board[toRow][toCol] == "black_pawn" && toRow == 7)) {
+      showPromotionDialog(context, board[toRow][toCol]!.split("_")[0])
           .then((promotedPiece) {
         if (promotedPiece != null) {
           setState(() {
-            board[row][col] = promotedPiece;
+            board[toRow][toCol] = promotedPiece;
           });
         }
       });
     }
+  }
+
+  Future<void> onMoveWithAI(
+      List<List<String?>> board, int toRow, int toCol) async {
+    setState(() {
+      String? move = board[toRow][toCol];
+      if (fromRow == null && fromCol == null) {
+        if (board[toRow][toCol] != null) {
+          fromRow = toRow;
+          fromCol = toCol;
+          if (!(currentTurn == "white" &&
+                  board[fromRow!][fromCol!]!.startsWith("white")) &&
+              !(currentTurn == "black" &&
+                  board[toRow][toCol]!.startsWith("black"))) {
+            fromRow = null;
+            fromCol = null;
+          }
+        }
+      } else {
+        if ((currentTurn == "white" &&
+                board[fromRow!][fromCol!]!.startsWith("white")) ||
+            (currentTurn == "black" &&
+                board[fromRow!][fromCol!]!.startsWith("black"))) {
+          if (toRow == fromRow && toCol == fromCol) {
+            fromRow = null;
+            fromCol = null;
+            return;
+          }
+          if (!checkEnPassant(
+              board, fromRow!, fromCol!, toRow, toCol, previousMove)) {
+            if (!checkLegalMove(board, fromRow!, fromCol!, toRow, toCol)) {
+              return;
+            }
+          } else {
+            if (board[fromRow!][fromCol!]!.startsWith("white")) {
+              board[toRow + 1][toCol] = null;
+            } else {
+              board[toRow - 1][toCol] = null;
+            }
+          }
+          String? target = board[fromRow!][fromCol!];
+
+          board[toRow][toCol] = board[fromRow!][fromCol!];
+          board[fromRow!][fromCol!] = null;
+
+          if (isCheck(board, currentTurn)) {
+            board[toRow][toCol] = move;
+            board[fromRow!][fromCol!] = target;
+            return;
+          }
+          if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Koniec gry"),
+                    content: Text("Szach mat"),
+                    actions: [
+                      TextButton(
+                        child: Text("Zamknij"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Board(
+                                        isAgainstAI: false,
+                                      )));
+                        },
+                      )
+                    ],
+                  );
+                });
+          }
+        }
+        previousMove = Move(
+            color: currentTurn,
+            figure: board[toRow][toCol]!,
+            isCapture: move != null,
+            piece: Image.asset(
+              "assets/${board[toRow][toCol]}.png",
+              scale: 1.8,
+            ),
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
+        addMove(Move(
+            isCapture: move != null,
+            piece: Image.asset(
+              "assets/${board[toRow][toCol]}.png",
+              scale: 1.8,
+            ),
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
+        fromRow = null;
+        fromCol = null;
+        botEasy.makeMoveAI();
+      }
+    });
+    if ((board[toRow][toCol] == "white_pawn" && toRow == 0) ||
+        (board[toRow][toCol] == "black_pawn" && toRow == 7)) {
+      showPromotionDialog(context, board[toRow][toCol]!.split("_")[0])
+          .then((promotedPiece) {
+        if (promotedPiece != null) {
+          setState(() {
+            board[toRow][toCol] = promotedPiece;
+          });
+        }
+      });
+    }
+  }
+
+  void makeMove(Move move) {
+    board[8 - int.parse(move.to[1])][move.to.codeUnitAt(0) - 97] = move.figure;
+    board[8 - int.parse(move.from[1])][move.from.codeUnitAt(0) - 97] = null;
   }
 }

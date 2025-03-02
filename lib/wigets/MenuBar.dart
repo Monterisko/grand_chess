@@ -27,18 +27,104 @@ Widget play(context) {
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text("Rozpocznij nową grę"),
-              actionsAlignment: MainAxisAlignment.center,
-              actions: [
-                TextButton(
-                  child: Text("vs Computer",
-                      style: TextStyle(color: Colors.black)),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Board()));
-                  },
-                )
-              ],
+              content: Column(
+                spacing: 30,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextButton(
+                    child: Text("vs Komputer",
+                        style: TextStyle(color: Colors.black)),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      showDialog(
+                          context: context,
+                          builder: (context) {
+                            return AlertDialog(
+                              title: Text("Wybierz poziom trudności"),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 30,
+                                children: [
+                                  TextButton(
+                                    child: Text("Łatwy",
+                                        style: TextStyle(color: Colors.black)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Board(
+                                                    isAgainstAI: true,
+                                                  )));
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text("Średni",
+                                        style: TextStyle(color: Colors.black)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Board(
+                                                    isAgainstAI: true,
+                                                  )));
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: Text("Trudny",
+                                        style: TextStyle(color: Colors.black)),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => Board(
+                                                    isAgainstAI: true,
+                                                  )));
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          });
+                    },
+                  ),
+                  TextButton(
+                    child:
+                        Text("vs Gracz", style: TextStyle(color: Colors.black)),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Board(
+                                    isAgainstAI: false,
+                                  )));
+                    },
+                  ),
+                  TextButton(
+                    child: Text("vs Gracz (Hotseat)",
+                        style: TextStyle(color: Colors.black)),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => Board(
+                                    isAgainstAI: false,
+                                  )));
+                    },
+                  ),
+                  TextButton(
+                    child:
+                        Text("Anuluj", style: TextStyle(color: Colors.black)),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
             );
           });
     },
