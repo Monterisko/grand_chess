@@ -88,6 +88,7 @@ class BoardMove extends State<Board> {
   String currentTurn = "white";
   static bool castleW = true;
   static bool castleB = true;
+  Move previousMove = Move(from: "", to: "", piece: Image.asset(""));
 
   Future<void> onMove(List<List<String?>> board, int row, int col) async {
     setState(() {
@@ -115,9 +116,17 @@ class BoardMove extends State<Board> {
             selectedCol = null;
             return;
           }
-
-          if (!checkLegalMove(board, selectedRow!, selectedCol!, row, col)) {
-            return;
+          if (!checkEnPassant(
+              board, selectedRow!, selectedCol!, row, col, previousMove)) {
+            if (!checkLegalMove(board, selectedRow!, selectedCol!, row, col)) {
+              return;
+            }
+          } else {
+            if (board[selectedRow!][selectedCol!]!.startsWith("white")) {
+              board[row + 1][col] = null;
+            } else {
+              board[row - 1][col] = null;
+            }
           }
           String? target = board[selectedRow!][selectedCol!];
 
@@ -149,6 +158,17 @@ class BoardMove extends State<Board> {
                 });
           }
         }
+        previousMove = Move(
+            color: currentTurn,
+            figure: board[row][col]!,
+            isCapture: move != null,
+            piece: Image.asset(
+              "assets/${board[row][col]}.png",
+              scale: 1.8,
+            ),
+            from:
+                "${String.fromCharCode(97 + selectedCol!)}${8 - selectedRow!}",
+            to: "${String.fromCharCode(97 + col)}${8 - row}");
         addMove(Move(
             isCapture: move != null,
             piece: Image.asset(

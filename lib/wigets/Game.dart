@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/BoardMove.dart';
+import 'package:grand_chess/wigets/Move.dart';
 
 bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
     int row, int col) {
@@ -324,6 +325,32 @@ bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
     }
   }
   return false;
+}
+
+bool checkEnPassant(List<List<String?>> board, int selectedRow, int selectedCol,
+    int row, int col, Move previousMove) {
+  print(
+      "selectedRow: $selectedRow, selectedCol: $selectedCol, row: $row, col: $col, figure: ${previousMove.figure}, previousMove: ${previousMove.toString()}");
+
+  if (previousMove.color == "white" ? selectedRow != 4 : selectedRow != 3) {
+    return false;
+  }
+
+  if (previousMove.color == "black"
+      ? !(previousMove.figure == "black_pawn" &&
+          previousMove.from[1] == "7" &&
+          previousMove.to[1] == "5")
+      : !(previousMove.figure == "white_pawn" &&
+          previousMove.from[1] == "2" &&
+          previousMove.to[1] == "4")) {
+    return false;
+  }
+
+  bool isAdjacentCol =
+      (previousMove.to.codeUnitAt(0) - 97 - selectedCol).abs() == 1;
+  bool isCorrectRow = (previousMove.to[1] == "5" || previousMove.to[1] == "4");
+  print("isAdjacentCol: $isAdjacentCol, isCorrectRow: $isCorrectRow");
+  return isCorrectRow && isAdjacentCol;
 }
 
 bool isCheck(List<List<String?>> board, String color) {
