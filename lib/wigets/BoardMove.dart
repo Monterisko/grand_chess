@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
@@ -316,8 +318,25 @@ class BoardMove extends State<Board> {
     }
   }
 
-  void makeMove(Move move) {
-    board[8 - int.parse(move.to[1])][move.to.codeUnitAt(0) - 97] = move.figure;
-    board[8 - int.parse(move.from[1])][move.from.codeUnitAt(0) - 97] = null;
+  void makeMove() {
+    List<Move> legalMoves = botEasy.getLegalMovesForAI("black");
+    if (isCheck(board, "black")) {
+      legalMoves.where((move) => isMoveSafe(board, move, "black")).toList();
+      if (isCheck(board, "black")) {
+        List<Move> safeMoves = legalMoves
+            .where((move) => isMoveSafe(board, move, "black"))
+            .toList();
+
+        if (safeMoves.isEmpty) {
+          return;
+        }
+
+        botEasy.executeMove(safeMoves[Random().nextInt(safeMoves.length)]);
+        return;
+      }
+    }
+    if (legalMoves.isNotEmpty) {
+      botEasy.executeMove(legalMoves[Random().nextInt(legalMoves.length)]);
+    }
   }
 }

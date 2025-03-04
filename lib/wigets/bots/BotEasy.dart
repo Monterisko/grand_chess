@@ -11,17 +11,12 @@ Move getRandom(List<Move> legalMoves) {
 
 class BotEasy {
   final List<List<String?>> board;
-  final Function(Move) makeMove;
+  final Function() makeMove;
 
   BotEasy({required this.board, required this.makeMove});
 
   void makeMoveAI() {
-    List<Move> legalMoves = getLegalMovesForAI("black");
-
-    if (legalMoves.isNotEmpty) {
-      Move chosenMove = legalMoves[Random().nextInt(legalMoves.length)];
-      makeMove(chosenMove);
-    }
+    makeMove();
   }
 
   List<Move> getLegalMovesForAI(String color) {
@@ -46,4 +41,26 @@ class BotEasy {
     }
     return legalMoves;
   }
+
+  void executeMove(Move move) {
+    int fromRow = 8 - int.parse(move.from[1]);
+    int fromCol = move.from.codeUnitAt(0) - 97;
+    int toRow = 8 - int.parse(move.to[1]);
+    int toCol = move.to.codeUnitAt(0) - 97;
+    board[toRow][toCol] = board[fromRow][fromCol];
+    board[fromRow][fromCol] = null;
+  }
+}
+
+bool isMoveSafe(List<List<String?>> board, Move move, String botColor) {
+  List<List<String?>> tempBoard = List.generate(8, (i) => List.from(board[i]));
+
+  int fromRow = 8 - int.parse(move.from[1]);
+  int fromCol = move.from.codeUnitAt(0) - 97;
+  int toRow = 8 - int.parse(move.to[1]);
+  int toCol = move.to.codeUnitAt(0) - 97;
+  tempBoard[toRow][toCol] = tempBoard[fromRow][fromCol];
+  tempBoard[fromRow][fromCol] = null;
+
+  return !isCheck(tempBoard, botColor);
 }
