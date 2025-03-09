@@ -336,7 +336,9 @@ class BoardMove extends State<Board> {
       }
     }
     if (legalMoves.isNotEmpty) {
-      botEasy.executeMove(legalMoves[Random().nextInt(legalMoves.length)]);
+      Move move = legalMoves[Random().nextInt(legalMoves.length)];
+      addMove(move);
+      botEasy.executeMove(move);
     }
   }
 }

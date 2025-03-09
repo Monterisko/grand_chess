@@ -31,7 +31,10 @@ class BotEasy {
                     figure: board[i][j]!,
                     from: "${String.fromCharCode(97 + j)}${8 - i}",
                     to: "${String.fromCharCode(97 + l)}${8 - k}",
-                    piece: Image.asset("assets/${board[i][j]}.png"),
+                    piece: Image.asset(
+                      "assets/${board[i][j]}.png",
+                      scale: 1.8,
+                    ),
                     isCapture: board[k][l] != null));
               }
             }
