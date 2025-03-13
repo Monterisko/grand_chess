@@ -3,22 +3,28 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/wigets/bots/Bot.dart';
 
 Move getRandom(List<Move> legalMoves) {
   final random = Random();
   return legalMoves[random.nextInt(legalMoves.length)];
 }
 
-class BotEasy {
+class BotEasy extends Bot {
+  @override
   final List<List<String?>> board;
+  @override
   final Function() makeMove;
 
-  BotEasy({required this.board, required this.makeMove});
+  BotEasy({required this.board, required this.makeMove})
+      : super(difficulty: 'easy', board: board, makeMove: makeMove);
 
+  @override
   void makeMoveAI() {
     makeMove();
   }
 
+  @override
   List<Move> getLegalMovesForAI(String color) {
     List<Move> legalMoves = [];
     for (int i = 0; i < 8; i++) {
@@ -45,6 +51,7 @@ class BotEasy {
     return legalMoves;
   }
 
+  @override
   void executeMove(Move move) {
     int fromRow = 8 - int.parse(move.from[1]);
     int fromCol = move.from.codeUnitAt(0) - 97;

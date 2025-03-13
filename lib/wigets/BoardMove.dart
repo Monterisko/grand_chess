@@ -6,16 +6,18 @@ import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/wigets/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
+import 'package:grand_chess/wigets/bots/BotHard.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
   int? fromRow;
   int? fromCol;
-  late BotEasy botEasy;
-  bool isAgainstAI;
+  late var bot;
+  BotSettings settings;
 
-  BoardMove({required this.isAgainstAI});
+  BoardMove({required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +34,11 @@ class BoardMove extends State<Board> {
   void initState() {
     super.initState();
     initializeBoard();
-    if (isAgainstAI) {
-      botEasy = BotEasy(board: board, makeMove: makeMove);
+    if (settings.isAgainstAI) {
+      bot = Bot.createBot(settings, board, makeMove);
+      if (settings.difficulty == "hard") {
+        (bot as BotHard).getBestMove("e2e4 e7e5 g1f3 b8c6 f1c4");
+      }
     }
   }
 
@@ -76,7 +81,7 @@ class BoardMove extends State<Board> {
             int toCol = index % 8;
             bool isSelected = (toRow == fromRow && toCol == fromCol);
             return GestureDetector(
-              onTap: () => isAgainstAI
+              onTap: () => settings.isAgainstAI
                   ? onMoveWithAI(board, toRow, toCol)
                   : onMove(board, toRow, toCol),
               child: Container(
@@ -164,7 +169,7 @@ class BoardMove extends State<Board> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => Board(
-                                        isAgainstAI: false,
+                                        settings: settings,
                                       )));
                         },
                       )
@@ -273,7 +278,7 @@ class BoardMove extends State<Board> {
                               context,
                               MaterialPageRoute(
                                   builder: (context) => Board(
-                                        isAgainstAI: false,
+                                        settings: settings,
                                       )));
                         },
                       )
@@ -302,7 +307,7 @@ class BoardMove extends State<Board> {
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
         fromRow = null;
         fromCol = null;
-        botEasy.makeMoveAI();
+        bot.makeMoveAI();
       }
     });
     if ((board[toRow][toCol] == "white_pawn" && toRow == 0) ||
@@ -319,7 +324,7 @@ class BoardMove extends State<Board> {
   }
 
   void makeMove() {
-    List<Move> legalMoves = botEasy.getLegalMovesForAI("black");
+    List<Move> legalMoves = bot.getLegalMovesForAI("black");
     if (isCheck(board, "black")) {
       legalMoves.where((move) => isMoveSafe(board, move, "black")).toList();
       if (isCheck(board, "black")) {
@@ -331,14 +336,14 @@ class BoardMove extends State<Board> {
           return;
         }
 
-        botEasy.executeMove(safeMoves[Random().nextInt(safeMoves.length)]);
+        bot.executeMove(safeMoves[Random().nextInt(safeMoves.length)]);
         return;
       }
     }
     if (legalMoves.isNotEmpty) {
       Move move = legalMoves[Random().nextInt(legalMoves.length)];
       addMove(move);
-      botEasy.executeMove(move);
+      bot.executeMove(move);
     }
   }
 }

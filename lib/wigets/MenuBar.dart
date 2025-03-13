@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Board.dart';
+import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/bots/Bot.dart';
 
 Widget menuBar(context) {
   return Container(
@@ -50,11 +52,14 @@ Widget play(context) {
                                         style: TextStyle(color: Colors.black)),
                                     onPressed: () {
                                       Navigator.of(context).pop();
+                                      clearMoves();
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    isAgainstAI: true,
+                                                    settings: BotSettings(
+                                                        difficulty: "easy",
+                                                        isAgainstAI: true),
                                                   )));
                                     },
                                   ),
@@ -63,11 +68,14 @@ Widget play(context) {
                                         style: TextStyle(color: Colors.black)),
                                     onPressed: () {
                                       Navigator.of(context).pop();
+                                      clearMoves();
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    isAgainstAI: true,
+                                                    settings: BotSettings(
+                                                        difficulty: "medium",
+                                                        isAgainstAI: true),
                                                   )));
                                     },
                                   ),
@@ -76,11 +84,14 @@ Widget play(context) {
                                         style: TextStyle(color: Colors.black)),
                                     onPressed: () {
                                       Navigator.of(context).pop();
+                                      clearMoves();
                                       Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    isAgainstAI: true,
+                                                    settings: BotSettings(
+                                                        difficulty: "hard",
+                                                        isAgainstAI: true),
                                                   )));
                                     },
                                   ),
@@ -99,7 +110,8 @@ Widget play(context) {
                           context,
                           MaterialPageRoute(
                               builder: (context) => Board(
-                                    isAgainstAI: false,
+                                    settings: BotSettings(
+                                        difficulty: "easy", isAgainstAI: false),
                                   )));
                     },
                   ),
@@ -108,11 +120,13 @@ Widget play(context) {
                         style: TextStyle(color: Colors.black)),
                     onPressed: () {
                       Navigator.of(context).pop();
+                      clearMoves();
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => Board(
-                                    isAgainstAI: false,
+                                    settings: BotSettings(
+                                        difficulty: "easy", isAgainstAI: false),
                                   )));
                     },
                   ),

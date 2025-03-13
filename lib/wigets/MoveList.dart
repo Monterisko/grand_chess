@@ -48,3 +48,7 @@ Widget displayMoves() {
 void addMove(Move move) {
   moves.add(move);
 }
+
+void clearMoves() {
+  moves.clear();
+}
