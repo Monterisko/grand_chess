@@ -1,30 +1,25 @@
-import 'dart:js' as js;
+import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
+import 'package:web/web.dart' as html;
+
+@JS('getOutput')
+external String getOutput();
 
 class Stockfish {
-  late var engine;
-
   Stockfish() {
     init();
   }
 
   void init() {
-    String script = 'var stockfish = new Worker("stockfish.js");';
-
-    js.context.callMethod('eval', [script]);
-
-    engine = js.context['stockfish'];
-    engine.callMethod('postMessage', ['uci']);
-    engine.callMethod('addEventListener', [
-      'message',
-      (js.JsObject event) {
-        var data = event['data'];
-        print(data);
-      }
-    ]);
-    engine.callMethod('postMessage', ['isready']);
+    sendCommand('uci');
+    sendCommand('isready');
   }
 
   void sendCommand(String command) {
-    engine.callMethod('postMessage', [command]);
+    html.window.callMethod('sendCommand'.toJS, command.toJS);
+  }
+
+  String getBestMove() {
+    return getOutput();
   }
 }

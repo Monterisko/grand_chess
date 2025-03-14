@@ -37,7 +37,8 @@ class BoardMove extends State<Board> {
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove);
       if (settings.difficulty == "hard") {
-        (bot as BotHard).getBestMove("e2e4 e7e5 g1f3 b8c6 f1c4");
+        (bot as BotHard).endGame();
+        (bot as BotHard).changeDifficulty("20");
       }
     }
   }
@@ -165,6 +166,7 @@ class BoardMove extends State<Board> {
                         child: Text("Zamknij"),
                         onPressed: () {
                           Navigator.of(context).pop();
+                          clearMoves();
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -274,6 +276,7 @@ class BoardMove extends State<Board> {
                         child: Text("Zamknij"),
                         onPressed: () {
                           Navigator.of(context).pop();
+                          clearMoves();
                           Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -307,7 +310,13 @@ class BoardMove extends State<Board> {
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
         fromRow = null;
         fromCol = null;
-        bot.makeMoveAI();
+        if (bot is BotEasy) {
+          makeMove();
+        }
+        if (bot is BotHard) {
+          (bot as BotHard).getBestMove(moves);
+          (bot as BotHard).makeMoveAI();
+        }
       }
     });
     if ((board[toRow][toCol] == "white_pawn" && toRow == 0) ||
@@ -335,8 +344,9 @@ class BoardMove extends State<Board> {
         if (safeMoves.isEmpty) {
           return;
         }
-
-        bot.executeMove(safeMoves[Random().nextInt(safeMoves.length)]);
+        Move move = safeMoves[Random().nextInt(safeMoves.length)];
+        addMove(move);
+        bot.executeMove(move);
         return;
       }
     }
