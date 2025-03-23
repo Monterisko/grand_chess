@@ -37,15 +37,18 @@
   <script>
     var stockfishWorker = new Worker('stockfish-17-lite-single.js');
     var stockfishOutput = '';
+    var checkmate = false;
 
     stockfishWorker.addEventListener('message', function(event) {
       var message = event.data;
-      console.log('Stockfish:', message);
+
       if (message.startsWith('bestmove')) {
         stockfishOutput = message;
       }
-    });
-
+      if(message.includes('mate 0')) {
+        checkmate = true;
+      }
+    })
 
     function sendCommand(command) {
         if (stockfishWorker) {
@@ -57,6 +60,10 @@
     
     function getOutput(){
       return stockfishOutput;
+    }
+
+    function isCheckmate(){
+      return checkmate;
     }
     
     </script>

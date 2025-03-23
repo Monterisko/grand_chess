@@ -5,6 +5,9 @@ import 'package:web/web.dart' as html;
 @JS('getOutput')
 external String getOutput();
 
+@JS('isCheckmate')
+external bool isCheckmate();
+
 class Stockfish {
   Stockfish() {
     init();
@@ -17,6 +20,14 @@ class Stockfish {
 
   void sendCommand(String command) {
     html.window.callMethod('sendCommand'.toJS, command.toJS);
+  }
+
+  void checkCheckmate() {
+    sendCommand('go mate 0');
+  }
+
+  bool isChecmate() {
+    return isCheckmate();
   }
 
   String getBestMove() {

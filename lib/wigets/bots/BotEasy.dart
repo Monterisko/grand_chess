@@ -11,13 +11,15 @@ Move getRandom(List<Move> legalMoves) {
 }
 
 class BotEasy extends Bot {
-  @override
-  final List<List<String?>> board;
-  @override
-  final Function() makeMove;
-
-  BotEasy({required this.board, required this.makeMove})
-      : super(difficulty: 'easy', board: board, makeMove: makeMove);
+  BotEasy(
+      {required List<List<String?>> board,
+      required Function() makeMove,
+      required BuildContext context})
+      : super(
+            difficulty: 'easy',
+            board: board,
+            makeMove: makeMove,
+            context: context);
 
   @override
   void makeMoveAI() {

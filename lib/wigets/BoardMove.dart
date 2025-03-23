@@ -14,7 +14,7 @@ class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
   int? fromRow;
   int? fromCol;
-  late var bot;
+  late dynamic bot;
   BotSettings settings;
 
   BoardMove({required this.settings});
@@ -35,12 +35,16 @@ class BoardMove extends State<Board> {
     super.initState();
     initializeBoard();
     if (settings.isAgainstAI) {
-      bot = Bot.createBot(settings, board, makeMove);
+      bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
       if (settings.difficulty == "hard") {
         (bot as BotHard).endGame();
         (bot as BotHard).changeDifficulty("20");
       }
     }
+  }
+
+  void updateBoard() {
+    setState(() {});
   }
 
   void initializeBoard() {
@@ -265,29 +269,7 @@ class BoardMove extends State<Board> {
             return;
           }
           if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Koniec gry"),
-                    content: Text("Szach mat"),
-                    actions: [
-                      TextButton(
-                        child: Text("Zamknij"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          clearMoves();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Board(
-                                        settings: settings,
-                                      )));
-                        },
-                      )
-                    ],
-                  );
-                });
+            checkmate(context, settings);
           }
         }
         previousMove = Move(
@@ -315,7 +297,9 @@ class BoardMove extends State<Board> {
         }
         if (bot is BotHard) {
           (bot as BotHard).getBestMove(moves);
-          (bot as BotHard).makeMoveAI();
+          setState(() {
+            (bot as BotHard).makeMoveAI();
+          });
         }
       }
     });
@@ -356,4 +340,30 @@ class BoardMove extends State<Board> {
       bot.executeMove(move);
     }
   }
+}
+
+void checkmate(BuildContext context, BotSettings settings) {
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Koniec gry"),
+          content: Text("Szach mat"),
+          actions: [
+            TextButton(
+              child: Text("Zamknij"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Board(
+                              settings: settings,
+                            )));
+              },
+            )
+          ],
+        );
+      });
 }
