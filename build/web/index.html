@@ -29,10 +29,45 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <title>grand_chess</title>
+  <title>Grand Chess</title>
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
+  <script src="stockfish-17-lite-single.js"></script>
+  <script>
+    var stockfishWorker = new Worker('stockfish-17-lite-single.js');
+    var stockfishOutput = '';
+    var checkmate = false;
+
+    stockfishWorker.addEventListener('message', function(event) {
+      var message = event.data;
+
+      if (message.startsWith('bestmove')) {
+        stockfishOutput = message;
+      }
+      if(message.includes('mate 0')) {
+        checkmate = true;
+      }
+    })
+
+    function sendCommand(command) {
+        if (stockfishWorker) {
+          stockfishWorker.postMessage(command);
+        } else {
+          console.error('Stockfish worker is not initialized.');
+        }
+      }
+    
+    function getOutput(){
+      return stockfishOutput;
+    }
+
+    function isCheckmate(){
+      return checkmate;
+    }
+    
+    </script>
+
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
