@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/BoardMove.dart';
+import 'package:grand_chess/wigets/bots/Bot.dart';
 
+@immutable
 class Board extends StatefulWidget {
-  bool isAgainstAI;
-  Board({super.key, required this.isAgainstAI});
+  final BotSettings settings;
+  const Board({super.key, required this.settings});
 
   @override
   State<StatefulWidget> createState() {
-    return BoardMove(isAgainstAI: isAgainstAI);
+    return BoardMove(settings: settings);
   }
 }

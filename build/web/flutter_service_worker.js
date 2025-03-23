@@ -3,9 +3,9 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "09815ecc354a454d0f43937ae24462c7",
-"assets/AssetManifest.bin.json": "7368c581a3336a65e0e30e38d5b5a57f",
-"assets/AssetManifest.json": "12826a3faf4c278f93661bf701e5a86f",
+const RESOURCES = {"assets/AssetManifest.bin": "ff1aba43a5ccfe9edfc7eea654e858f9",
+"assets/AssetManifest.bin.json": "f365e622d9edcc47c04a04a201e4a156",
+"assets/AssetManifest.json": "d192f9303da9a2c34131caeb3637c8f4",
 "assets/assets/black_bishop.png": "29c93b8a61077df733607acb912ba4a8",
 "assets/assets/black_king.png": "4ec4f1ea7a1229b5c1605a441f1dbadf",
 "assets/assets/black_knight.png": "c7769112de03429631e0b3f41d3e9d1e",
@@ -20,9 +20,12 @@ const RESOURCES = {"assets/AssetManifest.bin": "09815ecc354a454d0f43937ae24462c7
 "assets/assets/white_rook.png": "563f40d351116411ad94fbae1d04b66f",
 "assets/FontManifest.json": "dc3d03800ccca4601324923c0b1d6d57",
 "assets/fonts/MaterialIcons-Regular.otf": "0db35ae7a415370b89e807027510caf0",
-"assets/NOTICES": "59aed7d6446f9d1a09b15faf63d9f57e",
+"assets/NOTICES": "94ea01726a2e03fd0d167846ab3d7c82",
 "assets/packages/cupertino_icons/assets/CupertinoIcons.ttf": "e986ebe42ef785b27164c36a9abc7818",
+"assets/packages/flutter_js/assets/js/fetch.js": "277e0c5ec36810cbe57371a4b7e26be0",
 "assets/shaders/ink_sparkle.frag": "ecc85a2e95f5e9f53123dcaf8cb9b6ce",
+"assets/web/stockfish-17-lite-single.js": "95ec3ef67bdb6e78c5a32a567d8c6ccc",
+"assets/web/stockfish-17-lite-single.wasm": "ed33f9230bd49b3dcd1ffa77f3e2c6cd",
 "canvaskit/canvaskit.js": "26eef3024dbc64886b7f48e1b6fb05cf",
 "canvaskit/canvaskit.js.symbols": "efc2cd87d1ff6c586b7d4c7083063a40",
 "canvaskit/canvaskit.wasm": "e7602c687313cfac5f495c5eac2fb324",
@@ -35,15 +38,17 @@ const RESOURCES = {"assets/AssetManifest.bin": "09815ecc354a454d0f43937ae24462c7
 "canvaskit/skwasm.worker.js": "89990e8c92bcb123999aa81f7e203b1c",
 "favicon.png": "a00d77b5cf7aa0b279d109bd434f1ae1",
 "flutter.js": "4b2350e14c6650ba82871f60906437ea",
-"flutter_bootstrap.js": "0aaa7ba81264c61964d4c05e7667112c",
+"flutter_bootstrap.js": "6261d74665b3dc8f7cdaa5ceca355b0f",
 "icons/Icon-192.png": "ac9a721a12bbc803b44f645561ecb1e1",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "8a4089cfb304a2c3d9533b8042918c56",
-"/": "8a4089cfb304a2c3d9533b8042918c56",
-"main.dart.js": "60c906f01d2ed7f92114a92f3d14b7e2",
+"index.html": "61ec5bfec3ca69694a341f340cd05f2d",
+"/": "61ec5bfec3ca69694a341f340cd05f2d",
+"main.dart.js": "67a1201d64b5adb9126a92f1ca64c217",
 "manifest.json": "e394ccf11586a98cb126516faabd579b",
+"stockfish-17-lite-single.js": "95ec3ef67bdb6e78c5a32a567d8c6ccc",
+"stockfish-17-lite-single.wasm": "ed33f9230bd49b3dcd1ffa77f3e2c6cd",
 "version.json": "b6ec4701ca8ed1a94636ca04a9c5367e"};
 // The application shell files that are downloaded before a service worker can
 // start.

@@ -6,16 +6,18 @@ import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/wigets/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
+import 'package:grand_chess/wigets/bots/BotHard.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
   int? fromRow;
   int? fromCol;
-  late BotEasy botEasy;
-  bool isAgainstAI;
+  late dynamic bot;
+  BotSettings settings;
 
-  BoardMove({required this.isAgainstAI});
+  BoardMove({required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +34,17 @@ class BoardMove extends State<Board> {
   void initState() {
     super.initState();
     initializeBoard();
-    if (isAgainstAI) {
-      botEasy = BotEasy(board: board, makeMove: makeMove);
+    if (settings.isAgainstAI) {
+      bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
+      if (settings.difficulty == "hard") {
+        (bot as BotHard).endGame();
+        (bot as BotHard).changeDifficulty("20");
+      }
     }
+  }
+
+  void updateBoard() {
+    setState(() {});
   }
 
   void initializeBoard() {
@@ -76,7 +86,7 @@ class BoardMove extends State<Board> {
             int toCol = index % 8;
             bool isSelected = (toRow == fromRow && toCol == fromCol);
             return GestureDetector(
-              onTap: () => isAgainstAI
+              onTap: () => settings.isAgainstAI
                   ? onMoveWithAI(board, toRow, toCol)
                   : onMove(board, toRow, toCol),
               child: Container(
@@ -160,11 +170,12 @@ class BoardMove extends State<Board> {
                         child: Text("Zamknij"),
                         onPressed: () {
                           Navigator.of(context).pop();
+                          clearMoves();
                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => Board(
-                                        isAgainstAI: false,
+                                        settings: settings,
                                       )));
                         },
                       )
@@ -258,28 +269,7 @@ class BoardMove extends State<Board> {
             return;
           }
           if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Koniec gry"),
-                    content: Text("Szach mat"),
-                    actions: [
-                      TextButton(
-                        child: Text("Zamknij"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Board(
-                                        isAgainstAI: false,
-                                      )));
-                        },
-                      )
-                    ],
-                  );
-                });
+            checkmate(context, settings);
           }
         }
         previousMove = Move(
@@ -302,7 +292,15 @@ class BoardMove extends State<Board> {
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
         fromRow = null;
         fromCol = null;
-        botEasy.makeMoveAI();
+        if (bot is BotEasy) {
+          makeMove();
+        }
+        if (bot is BotHard) {
+          (bot as BotHard).getBestMove(moves);
+          setState(() {
+            (bot as BotHard).makeMoveAI();
+          });
+        }
       }
     });
     if ((board[toRow][toCol] == "white_pawn" && toRow == 0) ||
@@ -319,7 +317,7 @@ class BoardMove extends State<Board> {
   }
 
   void makeMove() {
-    List<Move> legalMoves = botEasy.getLegalMovesForAI("black");
+    List<Move> legalMoves = bot.getLegalMovesForAI("black");
     if (isCheck(board, "black")) {
       legalMoves.where((move) => isMoveSafe(board, move, "black")).toList();
       if (isCheck(board, "black")) {
@@ -330,15 +328,42 @@ class BoardMove extends State<Board> {
         if (safeMoves.isEmpty) {
           return;
         }
-
-        botEasy.executeMove(safeMoves[Random().nextInt(safeMoves.length)]);
+        Move move = safeMoves[Random().nextInt(safeMoves.length)];
+        addMove(move);
+        bot.executeMove(move);
         return;
       }
     }
     if (legalMoves.isNotEmpty) {
       Move move = legalMoves[Random().nextInt(legalMoves.length)];
       addMove(move);
-      botEasy.executeMove(move);
+      bot.executeMove(move);
     }
   }
+}
+
+void checkmate(BuildContext context, BotSettings settings) {
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Koniec gry"),
+          content: Text("Szach mat"),
+          actions: [
+            TextButton(
+              child: Text("Zamknij"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Board(
+                              settings: settings,
+                            )));
+              },
+            )
+          ],
+        );
+      });
 }
