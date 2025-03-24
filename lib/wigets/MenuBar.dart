@@ -111,7 +111,8 @@ Widget play(context) {
                           MaterialPageRoute(
                               builder: (context) => Board(
                                     settings: BotSettings(
-                                        difficulty: "easy", isAgainstAI: false),
+                                        difficulty: "player",
+                                        isAgainstAI: false),
                                   )));
                     },
                   ),
@@ -126,7 +127,8 @@ Widget play(context) {
                           MaterialPageRoute(
                               builder: (context) => Board(
                                     settings: BotSettings(
-                                        difficulty: "easy", isAgainstAI: false),
+                                        difficulty: "player",
+                                        isAgainstAI: false),
                                   )));
                     },
                   ),

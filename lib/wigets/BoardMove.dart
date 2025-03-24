@@ -9,11 +9,13 @@ import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
 import 'package:grand_chess/wigets/bots/BotHard.dart';
+import 'package:grand_chess/wigets/bots/BotMedium.dart';
 
 class BoardMove extends State<Board> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
   int? fromRow;
   int? fromCol;
+  final ScrollController controller = ScrollController();
   late dynamic bot;
   BotSettings settings;
 
@@ -25,7 +27,10 @@ class BoardMove extends State<Board> {
       backgroundColor: Colors.grey,
       body: Column(children: [
         menuBar(context),
-        Row(children: [createBoard(), Expanded(child: displayMoves())])
+        Row(children: [
+          createBoard(),
+          Expanded(child: displayMoves(controller))
+        ])
       ]),
     );
   }
@@ -39,6 +44,10 @@ class BoardMove extends State<Board> {
       if (settings.difficulty == "hard") {
         (bot as BotHard).endGame();
         (bot as BotHard).changeDifficulty("20");
+      }
+      if (settings.difficulty == "medium") {
+        (bot as BotMedium).endGame();
+        (bot as BotMedium).changeDifficulty("10");
       }
     }
   }
@@ -299,6 +308,12 @@ class BoardMove extends State<Board> {
           (bot as BotHard).getBestMove(moves);
           setState(() {
             (bot as BotHard).makeMoveAI();
+          });
+        }
+        if (bot is BotMedium) {
+          (bot as BotMedium).getBestMove(moves);
+          setState(() {
+            (bot as BotMedium).makeMoveAI();
           });
         }
       }

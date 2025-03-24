@@ -3,61 +3,57 @@ import 'package:grand_chess/wigets/Move.dart';
 
 List<Move> moves = [];
 
-Widget displayMoves() {
-  final ScrollController controllerOne = ScrollController();
-  return Container(
-      margin: EdgeInsets.only(top: 40, left: 20),
-      child: SizedBox(
-          width: 200,
-          height: 400,
-          child: Row(
-            children: [
-              SizedBox(
-                  width: 100,
-                  child: Scrollbar(
-                      controller: controllerOne,
-                      child: ListView.builder(
-                        itemCount: moves.length,
-                        controller: controllerOne,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: Row(
-                              children: [
-                                if (index % 2 == 0) moves[index].piece,
-                                if (index % 2 == 0)
-                                  Text(
-                                    moves[index].to,
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      ))),
-              SizedBox(
-                  width: 100,
-                  child: Scrollbar(
-                      controller: controllerOne,
-                      child: ListView.builder(
-                        itemCount: moves.length,
-                        controller: controllerOne,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(2),
-                            child: Row(
-                              children: [
-                                if (index % 2 != 0) moves[index].piece,
-                                if (index % 2 != 0)
-                                  Text(
-                                    moves[index].to,
-                                  ),
-                              ],
-                            ),
-                          );
-                        },
-                      )))
-            ],
-          )));
+Widget displayMoves(ScrollController controller) {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    controller.animateTo(
+      controller.position.maxScrollExtent,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+    );
+  });
+
+  return SizedBox(
+    height: 200,
+    width: 500,
+    child: ListView.builder(
+      controller: controller,
+      itemCount: (moves.length / 2).ceil(),
+      itemBuilder: (context, index) {
+        return Table(
+          columnWidths: {
+            0: FlexColumnWidth(1),
+            1: FlexColumnWidth(1),
+          },
+          children: [
+            TableRow(
+              children: [
+                TableCell(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      if (index * 2 < moves.length) moves[index * 2].piece,
+                      if (index * 2 < moves.length) Text(moves[index * 2].to),
+                    ],
+                  ),
+                ),
+                TableCell(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      if (index * 2 + 1 < moves.length)
+                        moves[index * 2 + 1].piece,
+                      if (index * 2 + 1 < moves.length)
+                        Text(moves[index * 2 + 1].to),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    ),
+  );
 }
 
 void addMove(Move move) {
