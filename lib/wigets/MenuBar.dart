@@ -112,7 +112,8 @@ Widget play(context) {
                               builder: (context) => Board(
                                     settings: BotSettings(
                                         difficulty: "player",
-                                        isAgainstAI: false),
+                                        isAgainstAI: false,
+                                        isOnline: true),
                                   )));
                     },
                   ),

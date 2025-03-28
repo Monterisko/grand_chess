@@ -40,5 +40,9 @@ abstract class Bot {
 class BotSettings {
   final String difficulty;
   final bool isAgainstAI;
-  BotSettings({required this.difficulty, required this.isAgainstAI});
+  final bool isOnline;
+  BotSettings(
+      {required this.difficulty,
+      required this.isAgainstAI,
+      this.isOnline = false});
 }
