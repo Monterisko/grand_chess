@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Move.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
+import 'package:grand_chess/wigets/bots/BotMedium.dart';
 
 import 'BotHard.dart';
 
@@ -20,6 +21,9 @@ abstract class Bot {
     switch (settings.difficulty) {
       case "easy":
         return BotEasy(board: board, makeMove: makeMove, context: context);
+      case "medium":
+        return BotMedium(
+            board: board, makeMove: makeMove, update: update, context: context);
       case "hard":
         return BotHard(
             board: board, makeMove: makeMove, update: update, context: context);
@@ -36,5 +40,9 @@ abstract class Bot {
 class BotSettings {
   final String difficulty;
   final bool isAgainstAI;
-  BotSettings({required this.difficulty, required this.isAgainstAI});
+  final bool isOnline;
+  BotSettings(
+      {required this.difficulty,
+      required this.isAgainstAI,
+      this.isOnline = false});
 }
