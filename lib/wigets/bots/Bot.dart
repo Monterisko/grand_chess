@@ -16,7 +16,7 @@ abstract class Bot {
       required this.makeMove,
       required this.context});
 
-  factory Bot.createBot(BotSettings settings, List<List<String?>> board,
+  factory Bot.createBot(GameSettings settings, List<List<String?>> board,
       Function() makeMove, Function() update, BuildContext context) {
     switch (settings.difficulty) {
       case "easy":
@@ -37,12 +37,12 @@ abstract class Bot {
   void executeMove(Move move);
 }
 
-class BotSettings {
+class GameSettings {
   final String difficulty;
   final bool isAgainstAI;
   final bool isOnline;
-  BotSettings(
+  GameSettings(
       {required this.difficulty,
-      required this.isAgainstAI,
+      this.isAgainstAI = false,
       this.isOnline = false});
 }

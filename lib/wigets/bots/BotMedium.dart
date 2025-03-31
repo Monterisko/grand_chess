@@ -51,8 +51,8 @@ class BotMedium extends Bot {
       stockfishBot.sendCommand(
           "position startpos moves ${moves.map((e) => e.from + e.to).join(' ')}");
       if (isCheckMate(board, "white")) {
-        BotSettings settings =
-            BotSettings(difficulty: "medium", isAgainstAI: true);
+        GameSettings settings =
+            GameSettings(difficulty: "medium", isAgainstAI: true);
         checkmate(context, settings);
       }
       update();

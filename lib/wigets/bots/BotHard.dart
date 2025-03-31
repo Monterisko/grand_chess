@@ -51,8 +51,8 @@ class BotHard extends Bot {
       stockfishBot.sendCommand(
           "position startpos moves ${moves.map((e) => e.from + e.to).join(' ')}");
       if (isCheckMate(board, "white")) {
-        BotSettings settings =
-            BotSettings(difficulty: "hard", isAgainstAI: true);
+        GameSettings settings =
+            GameSettings(difficulty: "hard", isAgainstAI: true);
         checkmate(context, settings);
       }
       update();

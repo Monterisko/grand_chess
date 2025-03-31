@@ -4,7 +4,7 @@ import 'package:grand_chess/wigets/bots/Bot.dart';
 
 @immutable
 class Board extends StatefulWidget {
-  final BotSettings settings;
+  final GameSettings settings;
   const Board({super.key, required this.settings});
 
   @override

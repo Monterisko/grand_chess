@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
@@ -21,7 +22,7 @@ class BoardMove extends State<Board> {
   final ScrollController controller = ScrollController();
   late dynamic bot;
   late dynamic channel;
-  BotSettings settings;
+  GameSettings settings;
 
   BoardMove({required this.settings});
 
@@ -41,12 +42,27 @@ class BoardMove extends State<Board> {
 
   String turn = "white";
   String? myColor;
-  List<int> activeGames = [];
+  int? gameId;
+
+  Future<void> waitForGameId() async {
+    channel.stream.listen((message) {
+      final data = json.decode(message);
+      if (data["type"] == "game_id") {
+        setState(() {
+          gameId = data["game_id"];
+        });
+      }
+    });
+
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return gameId == null;
+    });
+  }
 
   @override
   void initState() {
     super.initState();
-    initializeBoard();
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
       if (settings.difficulty == "hard") {
@@ -59,33 +75,50 @@ class BoardMove extends State<Board> {
       }
     }
     if (settings.isOnline) {
-      if (activeGames.isEmpty) activeGames.add(1);
-
-      channel = WebSocketChannel.connect(
-          Uri.parse("ws://localhost:8000/ws/${activeGames.last}"));
-      channel.stream.listen((message) {
-        final data = json.decode(message);
-        if (data["type"] == "move") {
-          setState(() {
-            addMove(Move(
-                isCapture: data["isCapture"],
-                piece: Image.asset("assets/${data["figure"]}.png", scale: 1.8),
-                from: data["from"],
-                to: data["to"]));
-            board[8 - int.parse(data["to"][1])]
-                [data["to"][0].codeUnitAt(0) - 97] = data["figure"];
-            board[8 - int.parse(data["from"][1])]
-                [data["from"][0].codeUnitAt(0) - 97] = null;
-            turn = (turn == "white") ? "black" : "white";
-          });
-        } else if (data["type"] == "player_joined") {
-          setState(() {
-            myColor ??= data["color"];
-          });
-        }
+      channel = WebSocketChannel.connect(Uri.parse("ws://localhost:8000/ws"));
+      waitForGameId().then((_) {
+        channel.sink.close(status.normalClosure);
+        channel = WebSocketChannel.connect(
+            Uri.parse("ws://localhost:8000/ws/$gameId"));
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                content: Text("Oczekiwanie na przeciwnika"),
+              );
+            });
+        channel.stream.listen((message) {
+          final data = json.decode(message);
+          if (data["type"] == "start_game") {
+            Navigator.of(context).pop();
+          }
+          if (data["type"] == "end_game") {
+            checkmate(context, settings);
+          }
+          if (data["type"] == "move") {
+            setState(() {
+              addMove(Move(
+                  isCapture: data["isCapture"],
+                  piece:
+                      Image.asset("assets/${data["figure"]}.png", scale: 1.8),
+                  from: data["from"],
+                  to: data["to"]));
+              board[8 - int.parse(data["to"][1])]
+                  [data["to"][0].codeUnitAt(0) - 97] = data["figure"];
+              board[8 - int.parse(data["from"][1])]
+                  [data["from"][0].codeUnitAt(0) - 97] = null;
+              turn = (turn == "white") ? "black" : "white";
+            });
+          } else if (data["type"] == "player_joined") {
+            setState(() {
+              myColor ??= data["color"];
+            });
+          }
+        });
       });
-      print(myColor);
     }
+    initializeBoard();
+    if (myColor == "black") flipBoard();
   }
 
   void updateBoard() {
@@ -115,6 +148,16 @@ class BoardMove extends State<Board> {
     for (int i = 0; i < 8; i++) {
       board[1][i] = "black_pawn";
     }
+  }
+
+  void flipBoard() {
+    setState(() {
+      board = board.reversed.toList();
+      for (int i = 0; i < 8; i++) {
+        board[i] = board[i].reversed.toList();
+        print(board[i]);
+      }
+    });
   }
 
   Widget createBoard() {
@@ -422,29 +465,9 @@ class BoardMove extends State<Board> {
             return;
           }
           if (isCheckMate(board, myColor == "white" ? "black" : "white")) {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Koniec gry"),
-                    content: Text("Szach mat"),
-                    actions: [
-                      TextButton(
-                        child: Text("Zamknij"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          clearMoves();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Board(
-                                        settings: settings,
-                                      )));
-                        },
-                      )
-                    ],
-                  );
-                });
+            channel.sink.add(json.encode({
+              "type": "end_game",
+            }));
           }
         }
         previousMove = Move(
@@ -467,8 +490,6 @@ class BoardMove extends State<Board> {
         }));
         fromRow = null;
         fromCol = null;
-
-        turn = turn == "white" ? "black" : "white";
       }
     });
 
@@ -511,7 +532,7 @@ class BoardMove extends State<Board> {
   }
 }
 
-void checkmate(BuildContext context, BotSettings settings) {
+void checkmate(BuildContext context, GameSettings settings) {
   showDialog(
       context: context,
       builder: (BuildContext context) {

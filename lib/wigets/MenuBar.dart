@@ -57,7 +57,7 @@ Widget play(context) {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    settings: BotSettings(
+                                                    settings: GameSettings(
                                                         difficulty: "easy",
                                                         isAgainstAI: true),
                                                   )));
@@ -73,7 +73,7 @@ Widget play(context) {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    settings: BotSettings(
+                                                    settings: GameSettings(
                                                         difficulty: "medium",
                                                         isAgainstAI: true),
                                                   )));
@@ -89,7 +89,7 @@ Widget play(context) {
                                           context,
                                           MaterialPageRoute(
                                               builder: (context) => Board(
-                                                    settings: BotSettings(
+                                                    settings: GameSettings(
                                                         difficulty: "hard",
                                                         isAgainstAI: true),
                                                   )));
@@ -106,14 +106,13 @@ Widget play(context) {
                         Text("vs Gracz", style: TextStyle(color: Colors.black)),
                     onPressed: () {
                       Navigator.of(context).pop();
+                      clearMoves();
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => Board(
-                                    settings: BotSettings(
-                                        difficulty: "player",
-                                        isAgainstAI: false,
-                                        isOnline: true),
+                                    settings: GameSettings(
+                                        difficulty: "player", isOnline: true),
                                   )));
                     },
                   ),
@@ -127,9 +126,8 @@ Widget play(context) {
                           context,
                           MaterialPageRoute(
                               builder: (context) => Board(
-                                    settings: BotSettings(
-                                        difficulty: "player",
-                                        isAgainstAI: false),
+                                    settings:
+                                        GameSettings(difficulty: "player"),
                                   )));
                     },
                   ),
