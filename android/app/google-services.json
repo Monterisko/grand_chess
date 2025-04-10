@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "206024295635",
+    "project_id": "grand-chess-d7983",
+    "storage_bucket": "grand-chess-d7983.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206024295635:android:e306a39650e3d7cf7f4026",
+        "android_client_info": {
+          "package_name": "com.example.grand_chess"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEaVL3CxpbI3I7t4e8oQO3ke4CODKwYNM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
