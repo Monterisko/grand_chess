@@ -4,6 +4,9 @@ import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 
+bool isLoggedIn = false;
+late String name;
+
 Widget menuBar(context) {
   return Container(
     color: Colors.grey[800],
@@ -18,12 +21,19 @@ Widget menuBar(context) {
         ),
         play(context),
         Expanded(child: Container()),
-        TextButton(
-          child: Text("Zaloguj się", style: TextStyle(color: Colors.white)),
-          onPressed: () {
-            Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const LoginPage()));
-          },
+        if (isLoggedIn)
+          Text("Zalogowany jako: $name",
+              style: TextStyle(color: Colors.white, fontSize: 20)),
+        if (!isLoggedIn)
+          TextButton(
+            child: Text("Zaloguj się", style: TextStyle(color: Colors.white)),
+            onPressed: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()));
+            },
+          ),
+        Container(
+          width: 20,
         )
       ],
     ),

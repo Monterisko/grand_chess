@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/HomePage.dart';
+import 'package:grand_chess/pages/RegisterPage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 
 class LoginPage extends StatefulWidget {
@@ -9,6 +12,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late String? _name;
+  late String? _password;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,46 +25,117 @@ class _LoginPageState extends State<LoginPage> {
             child: Center(
               child: Container(
                 width: 400,
+                height: 480,
                 decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [
-                  Color.fromRGBO(46, 42, 36, 1.0),
-                  Color.fromRGBO(22, 21, 18, 1.0)
-                ])),
+                    borderRadius: BorderRadius.circular(10),
+                    color: HSLColor.fromAHSL(1.0, 37.0, 0.07, 0.14).toColor()),
+                padding: EdgeInsets.only(left: 20, right: 20, top: 20),
                 child: Column(
+                  spacing: 20,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      "Zaloguj się",
-                      style: TextStyle(color: Colors.white, fontSize: 30),
+                    Center(
+                      child: Text("Zaloguj się",
+                          style: TextStyle(color: Colors.white, fontSize: 30)),
                     ),
                     Text(
-                      "Nazwa użytkownika",
+                      "Nazwa użytkownika:",
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
-                    TextField(
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Wpisz nazwę użytkownika',
-                      ),
-                    ),
+                    TextFormField(
+                        autovalidateMode: AutovalidateMode.always,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Proszę wpisać nazwę użytkownika';
+                          }
+                          return null;
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.white),
+                          ),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.red),
+                          ),
+                          hintText: 'Wpisz nazwę użytkownika',
+                        ),
+                        onChanged: (value) {
+                          _name = value;
+                        },
+                        style: TextStyle(color: Colors.white)),
                     Text(
-                      "Hasło",
+                      "Hasło:",
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
-                    TextField(
+                    TextFormField(
+                      autovalidateMode: AutovalidateMode.always,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Proszę wpisać hasło';
+                        }
+                        return null;
+                      },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.white),
+                        ),
+                        errorBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
                         hintText: 'Wpisz hasło',
                       ),
+                      onChanged: (value) {
+                        _password = value;
+                      },
+                      obscureText: true,
+                      style: TextStyle(color: Colors.white),
                     ),
-                    ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromRGBO(46, 42, 36, 1.0),
-                            fixedSize: Size(200, 50)),
-                        child: Text(
-                          "Zaloguj się",
-                          style: TextStyle(color: Colors.white, fontSize: 20),
-                        )),
+                    Center(
+                      child: ElevatedButton(
+                          onPressed: () {
+                            checkUser(_name!, _password!).then((value) {
+                              if (value) {
+                                isLoggedIn = true;
+                                name = _name!;
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage()));
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Błędne dane logowania"),
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              fixedSize: Size(200, 50)),
+                          child: Text(
+                            "Zaloguj się",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          )),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => RegisterPage()));
+                      },
+                      child: Text("Zarejestruj się",
+                          style: TextStyle(color: Colors.blue, fontSize: 15)),
+                    )
                   ],
                 ),
               ),
