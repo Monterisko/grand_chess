@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/pages/LoginPage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
@@ -16,6 +17,14 @@ Widget menuBar(context) {
           style: TextStyle(color: Colors.white, fontSize: 30),
         ),
         play(context),
+        Expanded(child: Container()),
+        TextButton(
+          child: Text("Zaloguj się", style: TextStyle(color: Colors.white)),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const LoginPage()));
+          },
+        )
       ],
     ),
   );

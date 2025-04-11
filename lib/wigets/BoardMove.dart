@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
@@ -60,6 +61,19 @@ class BoardMove extends State<Board> {
     });
   }
 
+  Future<void> waitForColor(data) async {
+    if (data["type"] == "player_joined") {
+      setState(() {
+        myColor = data["color"];
+      });
+    }
+
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return myColor == null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -87,6 +101,8 @@ class BoardMove extends State<Board> {
                 content: Text("Oczekiwanie na przeciwnika"),
               );
             });
+        initializeBoard();
+
         channel.stream.listen((message) {
           final data = json.decode(message);
           if (data["type"] == "start_game") {
@@ -109,16 +125,46 @@ class BoardMove extends State<Board> {
                   [data["from"][0].codeUnitAt(0) - 97] = null;
               turn = (turn == "white") ? "black" : "white";
             });
-          } else if (data["type"] == "player_joined") {
-            setState(() {
-              myColor ??= data["color"];
-            });
+          }
+          waitForColor(data);
+          if (data["type"] == "player_left") {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Koniec gry"),
+                    content: Text("Przeciwnik opuścił grę"),
+                    actions: [
+                      TextButton(
+                        child: Text("Zagraj ponownie"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          clearMoves();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Board(
+                                        settings: settings,
+                                      )));
+                        },
+                      ),
+                      TextButton(
+                        child: Text("Zamknij"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()));
+                        },
+                      )
+                    ],
+                  );
+                });
           }
         });
       });
     }
-    initializeBoard();
-    if (myColor == "black") flipBoard();
   }
 
   void updateBoard() {
@@ -155,7 +201,6 @@ class BoardMove extends State<Board> {
       board = board.reversed.toList();
       for (int i = 0; i < 8; i++) {
         board[i] = board[i].reversed.toList();
-        print(board[i]);
       }
     });
   }
@@ -172,6 +217,10 @@ class BoardMove extends State<Board> {
           itemBuilder: (BuildContext context, int index) {
             int toRow = index ~/ 8;
             int toCol = index % 8;
+            if (myColor == "black") {
+              toRow = 7 - toRow;
+              toCol = 7 - toCol;
+            }
             bool isSelected = (toRow == fromRow && toCol == fromCol);
             return GestureDetector(
               onTap: () => settings.isAgainstAI
