@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/auth/Auth.dart';
 import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/pages/RegisterPage.dart';
@@ -12,7 +13,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late String? _name;
+  late String? _email;
   late String? _password;
   @override
   Widget build(BuildContext context) {
@@ -39,14 +40,14 @@ class _LoginPageState extends State<LoginPage> {
                           style: TextStyle(color: Colors.white, fontSize: 30)),
                     ),
                     Text(
-                      "Nazwa użytkownika:",
+                      "Email:",
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
                     TextFormField(
                         autovalidateMode: AutovalidateMode.always,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
-                            return 'Proszę wpisać nazwę użytkownika';
+                            return 'Proszę wpisać email';
                           }
                           return null;
                         },
@@ -64,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                           hintText: 'Wpisz nazwę użytkownika',
                         ),
                         onChanged: (value) {
-                          _name = value;
+                          _email = value;
                         },
                         style: TextStyle(color: Colors.white)),
                     Text(
@@ -101,22 +102,15 @@ class _LoginPageState extends State<LoginPage> {
                     Center(
                       child: ElevatedButton(
                           onPressed: () {
-                            checkUser(_name!, _password!).then((value) {
-                              if (value) {
-                                isLoggedIn = true;
-                                name = _name!;
-                                Navigator.pushReplacement(
+                            if (_email != null && _password != null) {
+                              signInWithEmailAndPassword(_email!, _password!)
+                                  .whenComplete(() {
+                                Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) => HomePage()));
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Błędne dane logowania"),
-                                  ),
-                                );
-                              }
-                            });
+                              });
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue,

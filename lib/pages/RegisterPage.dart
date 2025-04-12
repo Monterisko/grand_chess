@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/auth/Auth.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 
@@ -12,6 +12,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   late String? _name;
+  late String? _email;
   late String? _password;
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,6 @@ class _RegisterPageState extends State<RegisterPage> {
           Expanded(
               child: Center(
             child: Container(
-              height: 450,
               width: 400,
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
@@ -31,6 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
               padding: EdgeInsets.all(20),
               child: Column(
                 spacing: 20,
+                mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Center(
@@ -45,7 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     autovalidateMode: AutovalidateMode.always,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Proszę wpisać hasło';
+                        return 'Proszę wpisać nazwę użytkownika';
                       }
                       return null;
                     },
@@ -64,6 +65,34 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     onChanged: (value) {
                       _name = value;
+                    },
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  Text("Email:",
+                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                  TextFormField(
+                    autovalidateMode: AutovalidateMode.always,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Proszę wpisać email';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.white),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.red),
+                      ),
+                      hintText: 'Wpisz email',
+                    ),
+                    onChanged: (value) {
+                      _email = value;
                     },
                     style: TextStyle(color: Colors.white),
                   ),
@@ -100,37 +129,19 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   Center(
                     child: ElevatedButton(
-                        onPressed: () async {
-                          if (_name == null || _password == null) {
+                        onPressed: () {
+                          if (_name == null ||
+                              _email == null ||
+                              _password == null) {
                             return;
                           }
-                          bool isAdded = await addUser(_name!, _password!);
-                          if (isAdded == false) {
-                            showDialog(
-                                context: context,
-                                builder: (context) {
-                                  return AlertDialog(
-                                    title: Text("Błąd"),
-                                    content: Text(
-                                        "Użytkownik o tej nazwie już istnieje"),
-                                    actions: [
-                                      TextButton(
-                                        child: Text("OK"),
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                });
-                          } else {
-                            isLoggedIn = true;
-                            name = _name!;
-                            Navigator.push(
+                          createAccountByPassword(_name!, _email!, _password!)
+                              .whenComplete(() {
+                            Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (context) => HomePage()));
-                          }
+                          });
                         },
                         style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.blue,

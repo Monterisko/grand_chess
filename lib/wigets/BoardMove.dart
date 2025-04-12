@@ -7,7 +7,7 @@ import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';

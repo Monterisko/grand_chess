@@ -1,43 +1,100 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/components/User.dart';
+import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/pages/LoginPage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 
-bool isLoggedIn = false;
-late String name;
-
+late User user;
 Widget menuBar(context) {
-  return Container(
-    color: Colors.grey[800],
-    height: 60,
-    padding: const EdgeInsets.only(left: 20),
-    child: Row(
-      spacing: 20,
-      children: [
-        Text(
-          'GrandChess',
-          style: TextStyle(color: Colors.white, fontSize: 30),
-        ),
-        play(context),
-        Expanded(child: Container()),
-        if (isLoggedIn)
-          Text("Zalogowany jako: $name",
-              style: TextStyle(color: Colors.white, fontSize: 20)),
-        if (!isLoggedIn)
-          TextButton(
-            child: Text("Zaloguj się", style: TextStyle(color: Colors.white)),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()));
-            },
-          ),
-        Container(
-          width: 20,
-        )
-      ],
-    ),
-  );
+  return FutureBuilder(
+      future: fetchUser(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          user = snapshot.data!;
+          return Container(
+            color: Colors.grey[800],
+            height: 60,
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              spacing: 20,
+              children: [
+                Text(
+                  'GrandChess',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+                play(context),
+                Expanded(child: Container()),
+                if (isUserLogged())
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      dropdownColor: Colors.grey[800],
+                      value: user.getUserName(),
+                      items: [
+                        DropdownMenuItem(
+                            value: user.getUserName(),
+                            child: Text(
+                              user.getUserName(),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            )),
+                        DropdownMenuItem(
+                          value: "Wyloguj się",
+                          child: Text(
+                            "wyloguj się",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                          onTap: () {
+                            signOut().whenComplete(() {
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => HomePage()));
+                            });
+                          },
+                        )
+                      ],
+                      onChanged: (value) {},
+                    ),
+                  ),
+                Container(
+                  width: 20,
+                )
+              ],
+            ),
+          );
+        } else {
+          return Container(
+            color: Colors.grey[800],
+            height: 60,
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              spacing: 20,
+              children: [
+                Text(
+                  'GrandChess',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+                play(context),
+                Expanded(child: Container()),
+                TextButton(
+                  child: Text("Zaloguj się",
+                      style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()));
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+      });
 }
 
 Widget play(context) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 
 List<Move> moves = [];
 

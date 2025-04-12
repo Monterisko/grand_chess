@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:grand_chess/wigets/Game.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 
 Move getRandom(List<Move> legalMoves) {
