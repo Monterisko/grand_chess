@@ -41,8 +41,10 @@ class GameSettings {
   final String difficulty;
   final bool isAgainstAI;
   final bool isOnline;
+  final bool isHotseat;
   GameSettings(
       {required this.difficulty,
       this.isAgainstAI = false,
-      this.isOnline = false});
+      this.isOnline = false,
+      this.isHotseat = false});
 }

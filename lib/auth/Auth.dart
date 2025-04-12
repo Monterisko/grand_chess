@@ -1,4 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/widgets.dart';
+import 'package:grand_chess/components/Dialog.dart';
 import 'package:grand_chess/database/Database.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -17,7 +19,7 @@ String getUserId() {
 }
 
 Future<void> createAccountByPassword(
-    String name, String email, String password) async {
+    String name, String email, String password, BuildContext context) async {
   try {
     final credential = await _auth
         .createUserWithEmailAndPassword(email: email, password: password)
@@ -27,27 +29,30 @@ Future<void> createAccountByPassword(
     credential.user!.updateDisplayName(name);
   } on FirebaseAuthException catch (e) {
     if (e.code == 'weak-password') {
-      print('The password provided is too weak.');
+      showMessage(context, 'The password provided is too weak.', e.message!);
     } else if (e.code == 'email-already-in-use') {
-      print('The account already exists for that email.');
+      showMessage(
+          context, 'The account already exists for that email.', e.message!);
     }
   } catch (e) {
-    print(e);
+    showMessage(context, "", e.toString());
   }
 }
 
-Future<void> signInWithEmailAndPassword(String email, String password) async {
+Future<void> signInWithEmailAndPassword(
+    String email, String password, BuildContext context) async {
   try {
     final credential = await _auth.signInWithEmailAndPassword(
         email: email, password: password);
   } on FirebaseAuthException catch (e) {
     if (e.code == 'user-not-found') {
-      print('No user found for that email.');
+      showMessage(context, 'No user found for that email.', e.message!);
     } else if (e.code == 'wrong-password') {
-      print('Wrong password provided for that user.');
+      showMessage(
+          context, 'Wrong password provided for that user.', e.message!);
     }
   } catch (e) {
-    print(e);
+    showMessage(context, "", e.toString());
   }
 }
 

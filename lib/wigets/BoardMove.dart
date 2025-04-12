@@ -42,6 +42,8 @@ class BoardMove extends State<Board> {
   }
 
   String turn = "white";
+  String currentTurn = "white";
+
   String? myColor;
   int? gameId;
 
@@ -101,7 +103,6 @@ class BoardMove extends State<Board> {
                 content: Text("Oczekiwanie na przeciwnika"),
               );
             });
-        initializeBoard();
 
         channel.stream.listen((message) {
           final data = json.decode(message);
@@ -149,7 +150,7 @@ class BoardMove extends State<Board> {
                         },
                       ),
                       TextButton(
-                        child: Text("Zamknij"),
+                        child: Text("Powrót do menu"),
                         onPressed: () {
                           Navigator.of(context).pop();
                           Navigator.push(
@@ -165,6 +166,7 @@ class BoardMove extends State<Board> {
         });
       });
     }
+    initializeBoard();
   }
 
   void updateBoard() {
@@ -217,9 +219,17 @@ class BoardMove extends State<Board> {
           itemBuilder: (BuildContext context, int index) {
             int toRow = index ~/ 8;
             int toCol = index % 8;
-            if (myColor == "black") {
-              toRow = 7 - toRow;
-              toCol = 7 - toCol;
+            if (settings.isOnline) {
+              if (myColor == "black") {
+                toRow = 7 - toRow;
+                toCol = 7 - toCol;
+              }
+            }
+            if (settings.isHotseat) {
+              if (currentTurn == "black") {
+                toRow = 7 - toRow;
+                toCol = 7 - toCol;
+              }
             }
             bool isSelected = (toRow == fromRow && toCol == fromCol);
             return GestureDetector(
@@ -246,7 +256,6 @@ class BoardMove extends State<Board> {
         ));
   }
 
-  String currentTurn = "white";
   static bool castleW = true;
   static bool castleB = true;
   Move previousMove = Move(from: "", to: "", piece: Image.asset(""));
@@ -306,7 +315,7 @@ class BoardMove extends State<Board> {
                     content: Text("Szach mat"),
                     actions: [
                       TextButton(
-                        child: Text("Zamknij"),
+                        child: Text("Zagraj ponownie"),
                         onPressed: () {
                           Navigator.of(context).pop();
                           clearMoves();
@@ -316,6 +325,17 @@ class BoardMove extends State<Board> {
                                   builder: (context) => Board(
                                         settings: settings,
                                       )));
+                        },
+                      ),
+                      TextButton(
+                        child: Text("Powrót do menu"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          clearMoves();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()));
                         },
                       )
                     ],
@@ -590,7 +610,7 @@ void checkmate(BuildContext context, GameSettings settings) {
           content: Text("Szach mat"),
           actions: [
             TextButton(
-              child: Text("Zamknij"),
+              child: Text("Zagraj ponownie"),
               onPressed: () {
                 Navigator.of(context).pop();
                 clearMoves();
@@ -600,6 +620,15 @@ void checkmate(BuildContext context, GameSettings settings) {
                         builder: (context) => Board(
                               settings: settings,
                             )));
+              },
+            ),
+            TextButton(
+              child: Text("Powrót do menu"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomePage()));
               },
             )
           ],

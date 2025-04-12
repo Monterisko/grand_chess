@@ -135,7 +135,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               _password == null) {
                             return;
                           }
-                          createAccountByPassword(_name!, _email!, _password!)
+                          createAccountByPassword(
+                                  _name!, _email!, _password!, context)
                               .whenComplete(() {
                             Navigator.pushReplacement(
                                 context,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/auth/Auth.dart';
-import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/pages/RegisterPage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
@@ -103,7 +102,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: ElevatedButton(
                           onPressed: () {
                             if (_email != null && _password != null) {
-                              signInWithEmailAndPassword(_email!, _password!)
+                              signInWithEmailAndPassword(
+                                      _email!, _password!, context)
                                   .whenComplete(() {
                                 Navigator.push(
                                     context,
