@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/components/Move.dart';
+import 'package:grand_chess/wigets/Game.dart';
 
 class PGN {
   String _eventName;
@@ -11,8 +12,8 @@ class PGN {
   String _result;
   String _whiteElo;
   String _blackElo;
-  List<Move>
-      _moves; // Refers to Move from 'package:grand_chess/components/Move.dart'
+  List<Move> _moves;
+  List<List<String?>> _board = List.generate(8, (_) => List.filled(8, null));
 
   set setEventName(String eventName) {
     _eventName = eventName;
@@ -54,6 +55,31 @@ class PGN {
     _moves = moves;
   }
 
+  void initBoard() {
+    _board[7][0] = "white_rook";
+    _board[7][1] = "white_knight";
+    _board[7][2] = "white_bishop";
+    _board[7][3] = "white_queen";
+    _board[7][4] = "white_king";
+    _board[7][5] = "white_bishop";
+    _board[7][6] = "white_knight";
+    _board[7][7] = "white_rook";
+    for (int i = 0; i < 8; i++) {
+      _board[6][i] = "white_pawn";
+    }
+    _board[0][0] = "black_rook";
+    _board[0][1] = "black_knight";
+    _board[0][2] = "black_bishop";
+    _board[0][3] = "black_queen";
+    _board[0][4] = "black_king";
+    _board[0][5] = "black_bishop";
+    _board[0][6] = "black_knight";
+    _board[0][7] = "black_rook";
+    for (int i = 0; i < 8; i++) {
+      _board[1][i] = "black_pawn";
+    }
+  }
+
   String get getEventName => _eventName;
   String get getSiteName => _siteName;
   String get getDate => _date;
@@ -63,10 +89,10 @@ class PGN {
   String get getResult => _result;
   String get getWhiteElo => _whiteElo;
   String get getBlackElo => _blackElo;
-  String get getMoves => _moves.map((move) => move.to).join(" ");
+  String get getMoves => _moves.map<String>((move) => move.to).join(" ");
 
   PGN(
-      {moves = const [],
+      {moves = const <Move>[],
       eventName = "",
       siteName = "",
       date = "",
@@ -88,9 +114,12 @@ class PGN {
         _blackElo = blackElo;
 }
 
-PGN importFromPng(String pgn) {
+PGN pgnObj = PGN();
+
+PGN importFromPGN(String pgn) {
+  String turn = "";
   List<Move> moves = [];
-  PGN pgnObj = PGN();
+  pgnObj.initBoard();
   List<String> lines = pgn.split('\n');
   for (String line in lines) {
     if (line.isEmpty) continue;
@@ -112,101 +141,38 @@ PGN importFromPng(String pgn) {
       pgnObj.setEventName = line.split("\"")[1];
     } else if (line.contains("BlackElo")) {
       pgnObj.setEventName = line.split("\"")[1];
-    } else if (line.contains("1.")) {
-      List<String> moveList = line.split(" ");
+    } else if (line.contains(RegExp(r'\d+\.\s*'))) {
+      print(line.replaceAll(RegExp(r'\d+\.\s*'), ''));
+      List<String> moveList =
+          line.replaceAll(RegExp(r'\d+\.\s*'), '').split(" ");
       for (int i = 0; i < moveList.length; i++) {
-        if (moveList[i].contains(".")) {
-          continue;
+        if (i % 2 == 0) {
+          turn = "white";
+          // if (checkLegalMovePiece(
+          //     pgnObj._board,
+          //     "",
+          //     turn,
+          //     convertCharacterToNumber(moveList[i]),
+          //     int.parse(moveList[i][1]))) {}
+          // for (var j = 0; j < 8; j++) {
+          //   for (var k = 0; k < 8; k++) {
+          //     print(pgnObj._board[j][k]);
+          //   }
+          //   print('\n');
+          // }
         } else {
-          if (moveList[i].contains("N")) {
-            if (i % 2 == 0) {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/black_knight.png",
-                  )));
-            } else {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/white_knight.png",
-                  )));
-            }
-          } else if (moveList[i].contains("B")) {
-            if (i % 2 == 0) {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/black_bishop.png",
-                  )));
-            } else {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/white_bishop.png",
-                  )));
-            }
-          } else if (moveList[i].contains("R")) {
-            if (i % 2 == 0) {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/black_rook.png",
-                  )));
-            } else {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/white_rook.png",
-                  )));
-            }
-          } else if (moveList[i].contains("Q")) {
-            if (i % 2 == 0) {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/black_queen.png",
-                  )));
-            } else {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/white_queen.png",
-                  )));
-            }
-          } else if (moveList[i].contains("K")) {
-            if (i % 2 == 0) {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/black_king.png",
-                  )));
-            } else {
-              moves.add(Move(
-                  from: "",
-                  to: moveList[i],
-                  piece: Image.asset(
-                    "assets/white_king.png",
-                  )));
-            }
-          } else if (moveList[i].contains("O-O")) {
-            moves.add(Move(from: "", to: "", piece: Image.asset("")));
-          }
+          turn = "black";
         }
       }
     }
   }
 
   return pgnObj;
+}
+
+void move(int fromRow, int fromCol, int toRow, int toCol) {
+  pgnObj._board[toRow][toCol] = pgnObj._board[fromRow][fromCol];
+  pgnObj._board[fromRow][fromCol] = null;
 }
 
 String exportToPGN(PGN pgn) {
@@ -217,5 +183,8 @@ String exportToPGN(PGN pgn) {
   pgnString += "[Black \"${pgn.getBlackPlayerName}\"\n]";
   pgnString += "[Result \"${pgn.getResult}\"\n]";
   return pgnString;
-  ;
+}
+
+int convertCharacterToNumber(String s) {
+  return s.codeUnitAt(0) - 97;
 }

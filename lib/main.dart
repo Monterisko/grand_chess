@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:grand_chess/components/PGN.dart';
 import 'package:grand_chess/firebase_options.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 
@@ -10,6 +11,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  importFromPGN("1. e4 c5 ");
   runApp(const MyApp());
 }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/components/PGN.dart';
 import 'package:grand_chess/wigets/BoardMove.dart';
 import 'package:grand_chess/components/Move.dart';
 
@@ -322,6 +323,25 @@ bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
       board[0][0] = null;
       BoardMove.castleB = false;
       return true;
+    }
+  }
+  return false;
+}
+
+bool checkLegalMovePiece(List<List<String?>> board, String piece, String color,
+    int toRow, int toCol) {
+  int row = -1;
+  int col = -1;
+  for (var i = 0; i < 8; i++) {
+    for (var j = 0; j < 8; j++) {
+      if (board[i][j] == "${color}_$piece") {
+        row = i;
+        col = j;
+        if (checkLegalMove(board, row, col, toRow, toCol)) {
+          move(row, col, toRow, toCol);
+          return true;
+        }
+      }
     }
   }
   return false;
