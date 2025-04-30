@@ -12,7 +12,8 @@ Widget displayMoves(ScrollController controller) {
     );
   });
 
-  return SizedBox(
+  return Container(
+    padding: EdgeInsets.only(left: 20),
     height: 200,
     width: 500,
     child: ListView.builder(
@@ -20,6 +21,7 @@ Widget displayMoves(ScrollController controller) {
       itemCount: (moves.length / 2).ceil(),
       itemBuilder: (context, index) {
         return Table(
+          border: TableBorder.all(),
           columnWidths: {
             0: FlexColumnWidth(1),
             1: FlexColumnWidth(1),

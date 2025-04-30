@@ -33,10 +33,7 @@ class BoardMove extends State<Board> {
       backgroundColor: Colors.grey,
       body: Column(children: [
         menuBar(context),
-        Row(children: [
-          createBoard(),
-          Expanded(child: displayMoves(controller))
-        ])
+        Row(children: [createBoard(), displayMoves(controller)])
       ]),
     );
   }
