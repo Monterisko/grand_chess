@@ -16,7 +16,7 @@ Widget menuBar(context) {
         if (snapshot.hasData) {
           user = snapshot.data!;
           return Container(
-            color: Colors.grey[800],
+            color: Colors.transparent,
             height: 60,
             padding: const EdgeInsets.only(left: 20),
             child: Row(
@@ -68,7 +68,7 @@ Widget menuBar(context) {
           );
         } else {
           return Container(
-            color: Colors.grey[800],
+            color: Colors.transparent,
             height: 60,
             padding: const EdgeInsets.only(left: 20),
             child: Row(

@@ -9,6 +9,7 @@ import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/ResizableContainer.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
 import 'package:grand_chess/wigets/bots/BotHard.dart';
@@ -23,18 +24,37 @@ class BoardMove extends State<Board> {
   final ScrollController controller = ScrollController();
   late dynamic bot;
   late dynamic channel;
-  GameSettings settings;
+  late GameSettings settings;
 
-  BoardMove({required this.settings});
+  BoardMove();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey,
-      body: Column(children: [
-        menuBar(context),
-        Row(children: [createBoard(), displayMoves(controller)])
-      ]),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 118 / constraints.maxHeight],
+                colors: [
+                  Color.fromRGBO(46, 42, 36, 1),
+                  Color.fromRGBO(22, 21, 18, 1)
+                ],
+              ),
+            ),
+            child: Column(children: [
+              menuBar(context),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 20,
+                  children: [createBoard(), displayMoves(controller)])
+            ]),
+          );
+        },
+      ),
     );
   }
 
@@ -76,6 +96,7 @@ class BoardMove extends State<Board> {
   @override
   void initState() {
     super.initState();
+    settings = widget.settings;
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
       if (settings.difficulty == "hard") {
@@ -205,52 +226,57 @@ class BoardMove extends State<Board> {
   }
 
   Widget createBoard() {
-    return Container(
-        width: 400,
-        height: 400,
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-        margin: const EdgeInsets.only(top: 30),
-        child: GridView.builder(
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
-          itemBuilder: (BuildContext context, int index) {
-            int toRow = index ~/ 8;
-            int toCol = index % 8;
-            if (settings.isOnline) {
-              if (myColor == "black") {
-                toRow = 7 - toRow;
-                toCol = 7 - toCol;
+    return ResizableContainer(
+      initSize: 400,
+      minSize: 400,
+      maxSize: 800,
+      child: Center(
+        child: Container(
+          decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+          child: GridView.builder(
+            gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+            itemBuilder: (BuildContext context, int index) {
+              int toRow = index ~/ 8;
+              int toCol = index % 8;
+              if (settings.isOnline) {
+                if (myColor == "black") {
+                  toRow = 7 - toRow;
+                  toCol = 7 - toCol;
+                }
               }
-            }
-            if (settings.isHotseat) {
-              if (currentTurn == "black") {
-                toRow = 7 - toRow;
-                toCol = 7 - toCol;
+              if (settings.isHotseat) {
+                if (currentTurn == "black") {
+                  toRow = 7 - toRow;
+                  toCol = 7 - toCol;
+                }
               }
-            }
-            bool isSelected = (toRow == fromRow && toCol == fromCol);
-            return GestureDetector(
-              onTap: () => settings.isAgainstAI
-                  ? onMoveWithAI(board, toRow, toCol)
-                  : settings.isOnline
-                      ? onMoveOnline(toRow, toCol)
-                      : onMove(board, toRow, toCol),
-              child: Container(
-                decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.green
-                        : (toRow + toCol) % 2 == 0
-                            ? Colors.white
-                            : const Color.fromARGB(255, 159, 86, 60),
-                    border: Border.all(color: Colors.black)),
-                child: board[toRow][toCol] != null
-                    ? Image.asset('assets/${board[toRow][toCol]}.png')
-                    : null,
-              ),
-            );
-          },
-          itemCount: 64,
-        ));
+              bool isSelected = (toRow == fromRow && toCol == fromCol);
+              return GestureDetector(
+                onTap: () => settings.isAgainstAI
+                    ? onMoveWithAI(board, toRow, toCol)
+                    : settings.isOnline
+                        ? onMoveOnline(toRow, toCol)
+                        : onMove(board, toRow, toCol),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.green
+                          : (toRow + toCol) % 2 == 0
+                              ? Colors.white
+                              : const Color.fromARGB(255, 159, 86, 60),
+                      border: Border.all(color: Colors.black)),
+                  child: board[toRow][toCol] != null
+                      ? Image.asset('assets/${board[toRow][toCol]}.png')
+                      : null,
+                ),
+              );
+            },
+            itemCount: 64,
+          ),
+        ),
+      ),
+    );
   }
 
   static bool castleW = true;

@@ -9,6 +9,6 @@ class Board extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return BoardMove(settings: settings);
+    return BoardMove();
   }
 }
