@@ -328,23 +328,97 @@ bool checkLegalMove(List<List<String?>> board, int selectedRow, int selectedCol,
   return false;
 }
 
-bool checkLegalMovePiece(List<List<String?>> board, String piece, String color,
-    int toRow, int toCol) {
-  int row = -1;
-  int col = -1;
-  for (var i = 0; i < 8; i++) {
-    for (var j = 0; j < 8; j++) {
-      if (board[i][j] == "${color}_$piece") {
-        row = i;
-        col = j;
-        if (checkLegalMove(board, row, col, toRow, toCol)) {
-          move(row, col, toRow, toCol);
-          return true;
+bool canMove(String piece, int fromRow, int fromCol, int toRow, int toCol) {
+  final dx = (toCol - fromCol).abs();
+  final dy = (toRow - fromRow).abs();
+
+  switch (piece.split('_')[1]) {
+    case 'pawn':
+      if (dx == 0) {
+        if (piece.startsWith('white')) {
+          if (fromRow == 6 && dy == 2 && toRow == 4) {
+            return pgnObj.getBoard[5][fromCol] == null &&
+                pgnObj.getBoard[4][fromCol] == null;
+          }
+          return dy == 1 &&
+              toRow < fromRow &&
+              pgnObj.getBoard[toRow][toCol] == null;
+        } else {
+          if (fromRow == 1 && dy == 2 && toRow == 3) {
+            return pgnObj.getBoard[2][fromCol] == null &&
+                pgnObj.getBoard[3][fromCol] == null;
+          }
+          return dy == 1 &&
+              toRow > fromRow &&
+              pgnObj.getBoard[toRow][toCol] == null;
         }
+      } else if (dx == 1 && dy == 1) {
+        if (piece.startsWith('white')) {
+          return toRow < fromRow &&
+              pgnObj.getBoard[toRow][toCol]?.startsWith('black') == true;
+        } else {
+          return toRow > fromRow &&
+              pgnObj.getBoard[toRow][toCol]?.startsWith('white') == true;
+        }
+      }
+      return false;
+    case 'knight':
+      return (dx == 2 && dy == 1) || (dx == 1 && dy == 2);
+    case 'bishop':
+      return dx == dy;
+    case 'rook':
+      return dx == 0 || dy == 0;
+    case 'queen':
+      return dx == dy || dx == 0 || dy == 0;
+    case 'king':
+      return dx <= 1 && dy <= 1;
+    default:
+      return false;
+  }
+}
+
+String? getPieceForPgnMove(String pgnMove, String color) {
+  if (pgnMove == "O-O" || pgnMove == "O-O-O") {
+    return handleCastling(pgnMove, color);
+  }
+  final targetCoords = algebraicToCoords(pgnMove.substring(pgnMove.length - 2));
+
+  String? pieceType;
+  String? specificFile;
+  String? specificRank;
+
+  if (pgnMove.length == 2) {
+    pieceType = "pawn";
+  } else {
+    final firstChar = pgnMove[0];
+    if (RegExp(r'[RNBQK]').hasMatch(firstChar)) {
+      pieceType = pieceTypeFromSymbol(firstChar);
+      if (pgnMove.length > 3) {
+        final secondChar = pgnMove[1];
+        if (RegExp(r'[a-h]').hasMatch(secondChar)) {
+          specificFile = secondChar;
+        } else if (RegExp(r'[1-8]').hasMatch(secondChar)) {
+          specificRank = secondChar;
+        }
+      }
+    } else {
+      throw Exception("Nieznany typ figury w ruchu PGN: $pgnMove");
+    }
+  }
+  for (int row = 0; row < 8; row++) {
+    for (int col = 0; col < 8; col++) {
+      final piece = pgnObj.getBoard[row][col];
+      if (piece != null &&
+          piece.startsWith(color) &&
+          piece.endsWith(pieceType) &&
+          matchesSpecificFileAndRank(row, col, specificFile, specificRank) &&
+          canMove(piece, row, col, targetCoords[0], targetCoords[1])) {
+        return coordsToAlgebraic(row, col);
       }
     }
   }
-  return false;
+
+  return null;
 }
 
 bool checkEnPassant(List<List<String?>> board, int selectedRow, int selectedCol,

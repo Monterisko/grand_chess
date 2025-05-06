@@ -11,7 +11,19 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  importFromPGN("1. e4 c5 ");
+
+  const pgnContent = '''
+[Event "Friendly Game"]
+[Site "Online"]
+[Date "2025.05.06"]
+[Round "1"]
+[White "Player1"]
+[Black "Player2"]
+[Result "1-0"]
+
+1. e4 e5
+''';
+  importFromPGN(pgnContent);
   runApp(const MyApp());
 }
 

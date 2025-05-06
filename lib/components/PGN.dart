@@ -13,7 +13,8 @@ class PGN {
   String _whiteElo;
   String _blackElo;
   List<Move> _moves;
-  List<List<String?>> _board = List.generate(8, (_) => List.filled(8, null));
+  final List<List<String?>> _board =
+      List.generate(8, (_) => List.filled(8, null));
 
   set setEventName(String eventName) {
     _eventName = eventName;
@@ -80,6 +81,7 @@ class PGN {
     }
   }
 
+  List<List<String?>> get getBoard => _board;
   String get getEventName => _eventName;
   String get getSiteName => _siteName;
   String get getDate => _date;
@@ -142,27 +144,26 @@ PGN importFromPGN(String pgn) {
     } else if (line.contains("BlackElo")) {
       pgnObj.setEventName = line.split("\"")[1];
     } else if (line.contains(RegExp(r'\d+\.\s*'))) {
-      print(line.replaceAll(RegExp(r'\d+\.\s*'), ''));
       List<String> moveList =
           line.replaceAll(RegExp(r'\d+\.\s*'), '').split(" ");
       for (int i = 0; i < moveList.length; i++) {
         if (i % 2 == 0) {
           turn = "white";
-          // if (checkLegalMovePiece(
-          //     pgnObj._board,
-          //     "",
-          //     turn,
-          //     convertCharacterToNumber(moveList[i]),
-          //     int.parse(moveList[i][1]))) {}
-          // for (var j = 0; j < 8; j++) {
-          //   for (var k = 0; k < 8; k++) {
-          //     print(pgnObj._board[j][k]);
-          //   }
-          //   print('\n');
-          // }
         } else {
           turn = "black";
         }
+        moves.add(
+          Move(
+            from: getPieceForPgnMove(moveList[i], turn)!,
+            to: moveList[i],
+            piece: Image.asset(
+              '${turn}_${pieceTypeFromSymbol(moveList[i][0])}',
+            ),
+          ),
+        );
+        var from = algebraicToCoords(getPieceForPgnMove(moveList[i], turn)!);
+        var to = algebraicToCoords(moveList[i]);
+        move(from[0], from[1], to[0], to[1]);
       }
     }
   }
@@ -182,9 +183,69 @@ String exportToPGN(PGN pgn) {
   pgnString += "[White \"${pgn.getWhitePlayerName}\"\n]";
   pgnString += "[Black \"${pgn.getBlackPlayerName}\"\n]";
   pgnString += "[Result \"${pgn.getResult}\"\n]";
+  pgnString += "\n";
+  for (var i = 0; i < pgn.getMoves.length; i++) {
+    final move_number = (i ~/ 2) + 1;
+    final whiteMove = pgn.getMoves[i];
+    final blackMove = i + 1 < pgn.getMoves.length ? pgn.getMoves[i + 1] : '';
+    pgnString += '$move_number. $whiteMove $blackMove ';
+  }
   return pgnString;
 }
 
-int convertCharacterToNumber(String s) {
-  return s.codeUnitAt(0) - 97;
+List<int> algebraicToCoords(String square) {
+  final file = square[0].codeUnitAt(0) - 'a'.codeUnitAt(0);
+  final rank = 8 - int.parse(square[1]);
+  return [rank, file];
+}
+
+String coordsToAlgebraic(int row, int col) {
+  final file = String.fromCharCode('a'.codeUnitAt(0) + col);
+  final rank = (8 - row).toString();
+  return '$file$rank';
+}
+
+bool matchesSpecificFileAndRank(
+    int row, int col, String? specificFile, String? specificRank) {
+  if (specificFile != null &&
+      col != specificFile.codeUnitAt(0) - 'a'.codeUnitAt(0)) {
+    return false;
+  }
+  if (specificRank != null && row != 8 - int.parse(specificRank)) {
+    return false;
+  }
+  return true;
+}
+
+String pieceTypeFromSymbol(String symbol) {
+  switch (symbol) {
+    case 'R':
+      return 'rook';
+    case 'N':
+      return 'knight';
+    case 'B':
+      return 'bishop';
+    case 'Q':
+      return 'queen';
+    case 'K':
+      return 'king';
+    default:
+      return 'pawn';
+  }
+}
+
+String? handleCastling(String pgnMove, String color) {
+  final row = color == "white" ? 7 : 0;
+  if (pgnMove == "O-O") {
+    if (pgnObj._board[row][4] == "${color}_king" &&
+        pgnObj._board[row][7] == "${color}_rook") {
+      return "e${8 - row}";
+    }
+  } else if (pgnMove == "O-O-O") {
+    if (pgnObj._board[row][4] == "${color}_king" &&
+        pgnObj._board[row][0] == "${color}_rook") {
+      return "e${8 - row}";
+    }
+  }
+  return null;
 }

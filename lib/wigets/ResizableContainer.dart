@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:grand_chess/controllers/HeightController.dart';
 
 class ResizableContainer extends StatefulWidget {
