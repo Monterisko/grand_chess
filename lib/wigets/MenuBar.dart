@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grand_chess/auth/Auth.dart';
 import 'package:grand_chess/components/User.dart';
 import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/HistoryPage.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/pages/LoginPage.dart';
 import 'package:grand_chess/wigets/Board.dart';
@@ -42,22 +43,39 @@ Widget menuBar(context) {
                                   TextStyle(color: Colors.white, fontSize: 20),
                             )),
                         DropdownMenuItem(
+                          value: "Historia gier",
+                          child: Text(
+                            "Historia gier",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        DropdownMenuItem(
                           value: "Wyloguj się",
                           child: Text(
-                            "wyloguj się",
+                            "Wyloguj się",
                             style: TextStyle(color: Colors.white, fontSize: 20),
                           ),
-                          onTap: () {
-                            signOut().whenComplete(() {
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomePage()));
-                            });
-                          },
                         )
                       ],
-                      onChanged: (value) {},
+                      onChanged: (value) {
+                        if (value == "Historia gier") {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HistoryPage()));
+                        } else if (value == "Wyloguj się") {
+                          signOut().whenComplete(() {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()),
+                            );
+                          });
+                        }
+                      },
                     ),
                   ),
                 Container(
