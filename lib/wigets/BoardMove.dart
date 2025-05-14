@@ -3,11 +3,14 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 import 'package:grand_chess/wigets/Game.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
+import 'package:grand_chess/wigets/ResizableContainer.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
 import 'package:grand_chess/wigets/bots/BotHard.dart';
@@ -22,25 +25,43 @@ class BoardMove extends State<Board> {
   final ScrollController controller = ScrollController();
   late dynamic bot;
   late dynamic channel;
-  GameSettings settings;
+  late GameSettings settings;
 
-  BoardMove({required this.settings});
+  BoardMove();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey,
-      body: Column(children: [
-        menuBar(context),
-        Row(children: [
-          createBoard(),
-          Expanded(child: displayMoves(controller))
-        ])
-      ]),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 118 / constraints.maxHeight],
+                colors: [
+                  Color.fromRGBO(46, 42, 36, 1),
+                  Color.fromRGBO(22, 21, 18, 1)
+                ],
+              ),
+            ),
+            child: Column(children: [
+              menuBar(context),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 20,
+                  children: [createBoard(), displayMoves(controller)])
+            ]),
+          );
+        },
+      ),
     );
   }
 
   String turn = "white";
+  String currentTurn = "white";
+
   String? myColor;
   int? gameId;
 
@@ -60,9 +81,24 @@ class BoardMove extends State<Board> {
     });
   }
 
+  Future<void> waitForColor(data) async {
+    if (data["type"] == "player_joined") {
+      setState(() {
+        myColor = data["color"];
+      });
+    }
+
+    await Future.doWhile(() async {
+      await Future.delayed(const Duration(milliseconds: 100));
+      return myColor == null;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
+    addToGamesCollection({'gameResult': "", 'moves': []});
+    settings = widget.settings;
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
       if (settings.difficulty == "hard") {
@@ -87,6 +123,7 @@ class BoardMove extends State<Board> {
                 content: Text("Oczekiwanie na przeciwnika"),
               );
             });
+
         channel.stream.listen((message) {
           final data = json.decode(message);
           if (data["type"] == "start_game") {
@@ -109,16 +146,47 @@ class BoardMove extends State<Board> {
                   [data["from"][0].codeUnitAt(0) - 97] = null;
               turn = (turn == "white") ? "black" : "white";
             });
-          } else if (data["type"] == "player_joined") {
-            setState(() {
-              myColor ??= data["color"];
-            });
+          }
+          waitForColor(data);
+          if (data["type"] == "player_left") {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text("Koniec gry"),
+                    content: Text("Przeciwnik opuścił grę"),
+                    actions: [
+                      TextButton(
+                        child: Text("Zagraj ponownie"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          clearMoves();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => Board(
+                                        settings: settings,
+                                      )));
+                        },
+                      ),
+                      TextButton(
+                        child: Text("Powrót do menu"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()));
+                        },
+                      )
+                    ],
+                  );
+                });
           }
         });
       });
     }
     initializeBoard();
-    if (myColor == "black") flipBoard();
   }
 
   void updateBoard() {
@@ -155,49 +223,64 @@ class BoardMove extends State<Board> {
       board = board.reversed.toList();
       for (int i = 0; i < 8; i++) {
         board[i] = board[i].reversed.toList();
-        print(board[i]);
       }
     });
   }
 
   Widget createBoard() {
-    return Container(
-        width: 400,
-        height: 400,
-        decoration: BoxDecoration(border: Border.all(color: Colors.black)),
-        margin: const EdgeInsets.only(top: 30),
-        child: GridView.builder(
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
-          itemBuilder: (BuildContext context, int index) {
-            int toRow = index ~/ 8;
-            int toCol = index % 8;
-            bool isSelected = (toRow == fromRow && toCol == fromCol);
-            return GestureDetector(
-              onTap: () => settings.isAgainstAI
-                  ? onMoveWithAI(board, toRow, toCol)
-                  : settings.isOnline
-                      ? onMoveOnline(toRow, toCol)
-                      : onMove(board, toRow, toCol),
-              child: Container(
-                decoration: BoxDecoration(
-                    color: isSelected
-                        ? Colors.green
-                        : (toRow + toCol) % 2 == 0
-                            ? Colors.white
-                            : const Color.fromARGB(255, 159, 86, 60),
-                    border: Border.all(color: Colors.black)),
-                child: board[toRow][toCol] != null
-                    ? Image.asset('assets/${board[toRow][toCol]}.png')
-                    : null,
-              ),
-            );
-          },
-          itemCount: 64,
-        ));
+    return ResizableContainer(
+      initSize: 400,
+      minSize: 400,
+      maxSize: 800,
+      child: Center(
+        child: Container(
+          decoration: BoxDecoration(border: Border.all(color: Colors.black)),
+          child: GridView.builder(
+            gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+            itemBuilder: (BuildContext context, int index) {
+              int toRow = index ~/ 8;
+              int toCol = index % 8;
+              if (settings.isOnline) {
+                if (myColor == "black") {
+                  toRow = 7 - toRow;
+                  toCol = 7 - toCol;
+                }
+              }
+              if (settings.isHotseat) {
+                if (currentTurn == "black") {
+                  toRow = 7 - toRow;
+                  toCol = 7 - toCol;
+                }
+              }
+              bool isSelected = (toRow == fromRow && toCol == fromCol);
+              return GestureDetector(
+                onTap: () => settings.isAgainstAI
+                    ? onMoveWithAI(board, toRow, toCol)
+                    : settings.isOnline
+                        ? onMoveOnline(toRow, toCol)
+                        : onMove(board, toRow, toCol),
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: isSelected
+                          ? Colors.green
+                          : (toRow + toCol) % 2 == 0
+                              ? Colors.white
+                              : const Color.fromARGB(255, 159, 86, 60),
+                      border: Border.all(color: Colors.black)),
+                  child: board[toRow][toCol] != null
+                      ? Image.asset('assets/${board[toRow][toCol]}.png')
+                      : null,
+                ),
+              );
+            },
+            itemCount: 64,
+          ),
+        ),
+      ),
+    );
   }
 
-  String currentTurn = "white";
   static bool castleW = true;
   static bool castleB = true;
   Move previousMove = Move(from: "", to: "", piece: Image.asset(""));
@@ -257,7 +340,7 @@ class BoardMove extends State<Board> {
                     content: Text("Szach mat"),
                     actions: [
                       TextButton(
-                        child: Text("Zamknij"),
+                        child: Text("Zagraj ponownie"),
                         onPressed: () {
                           Navigator.of(context).pop();
                           clearMoves();
@@ -267,6 +350,17 @@ class BoardMove extends State<Board> {
                                   builder: (context) => Board(
                                         settings: settings,
                                       )));
+                        },
+                      ),
+                      TextButton(
+                        child: Text("Powrót do menu"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          clearMoves();
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()));
                         },
                       )
                     ],
@@ -541,7 +635,7 @@ void checkmate(BuildContext context, GameSettings settings) {
           content: Text("Szach mat"),
           actions: [
             TextButton(
-              child: Text("Zamknij"),
+              child: Text("Zagraj ponownie"),
               onPressed: () {
                 Navigator.of(context).pop();
                 clearMoves();
@@ -551,6 +645,15 @@ void checkmate(BuildContext context, GameSettings settings) {
                         builder: (context) => Board(
                               settings: settings,
                             )));
+              },
+            ),
+            TextButton(
+              child: Text("Powrót do menu"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomePage()));
               },
             )
           ],

@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:grand_chess/Stockfish.dart';
 import 'package:grand_chess/wigets/BoardMove.dart';
 import 'package:grand_chess/wigets/Game.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grand_chess/wigets/Move.dart';
+import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/bots/BotEasy.dart';
 import 'package:grand_chess/wigets/bots/BotMedium.dart';
 
@@ -41,8 +41,10 @@ class GameSettings {
   final String difficulty;
   final bool isAgainstAI;
   final bool isOnline;
+  final bool isHotseat;
   GameSettings(
       {required this.difficulty,
       this.isAgainstAI = false,
-      this.isOnline = false});
+      this.isOnline = false,
+      this.isHotseat = false});
 }

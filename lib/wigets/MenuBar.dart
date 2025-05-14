@@ -1,24 +1,118 @@
 import 'package:flutter/material.dart';
+import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/components/User.dart';
+import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/HistoryPage.dart';
+import 'package:grand_chess/pages/HomePage.dart';
+import 'package:grand_chess/pages/LoginPage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MoveList.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
 
+late User user;
 Widget menuBar(context) {
-  return Container(
-    color: Colors.grey[800],
-    height: 60,
-    padding: const EdgeInsets.only(left: 20),
-    child: Row(
-      spacing: 20,
-      children: [
-        Text(
-          'GrandChess',
-          style: TextStyle(color: Colors.white, fontSize: 30),
-        ),
-        play(context),
-      ],
-    ),
-  );
+  return FutureBuilder(
+      future: fetchUser(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          user = snapshot.data!;
+          return Container(
+            color: Colors.transparent,
+            height: 60,
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              spacing: 20,
+              children: [
+                Text(
+                  'GrandChess',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+                play(context),
+                Expanded(child: Container()),
+                if (isUserLogged())
+                  DropdownButtonHideUnderline(
+                    child: DropdownButton(
+                      dropdownColor: Colors.grey[800],
+                      value: user.getUserName(),
+                      items: [
+                        DropdownMenuItem(
+                            value: user.getUserName(),
+                            child: Text(
+                              user.getUserName(),
+                              style:
+                                  TextStyle(color: Colors.white, fontSize: 20),
+                            )),
+                        DropdownMenuItem(
+                          value: "Historia gier",
+                          child: Text(
+                            "Historia gier",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        DropdownMenuItem(
+                          value: "Wyloguj się",
+                          child: Text(
+                            "Wyloguj się",
+                            style: TextStyle(color: Colors.white, fontSize: 20),
+                          ),
+                        )
+                      ],
+                      onChanged: (value) {
+                        if (value == "Historia gier") {
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HistoryPage()));
+                        } else if (value == "Wyloguj się") {
+                          signOut().whenComplete(() {
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => HomePage()),
+                            );
+                          });
+                        }
+                      },
+                    ),
+                  ),
+                Container(
+                  width: 20,
+                )
+              ],
+            ),
+          );
+        } else {
+          return Container(
+            color: Colors.transparent,
+            height: 60,
+            padding: const EdgeInsets.only(left: 20),
+            child: Row(
+              spacing: 20,
+              children: [
+                Text(
+                  'GrandChess',
+                  style: TextStyle(color: Colors.white, fontSize: 30),
+                ),
+                play(context),
+                Expanded(child: Container()),
+                TextButton(
+                  child: Text("Zaloguj się",
+                      style: TextStyle(color: Colors.white)),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()));
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+      });
 }
 
 Widget play(context) {
@@ -126,8 +220,8 @@ Widget play(context) {
                           context,
                           MaterialPageRoute(
                               builder: (context) => Board(
-                                    settings:
-                                        GameSettings(difficulty: "player"),
+                                    settings: GameSettings(
+                                        difficulty: "player", isHotseat: true),
                                   )));
                     },
                   ),
