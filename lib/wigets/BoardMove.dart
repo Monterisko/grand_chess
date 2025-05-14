@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
@@ -96,6 +97,7 @@ class BoardMove extends State<Board> {
   @override
   void initState() {
     super.initState();
+    addToGamesCollection({'gameResult': "", 'moves': []});
     settings = widget.settings;
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove, updateBoard, context);

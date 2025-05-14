@@ -12,6 +12,21 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
+  List<Map<String, dynamic>> allGames = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGames();
+  }
+
+  Future<void> fetchGames() async {
+    final games = await fetchAllGames();
+    setState(() {
+      allGames = games;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,69 +47,90 @@ class HistoryPageState extends State<HistoryPage> {
             child: Column(
               children: [
                 menuBar(context),
-                Table(
-                  border: TableBorder.all(color: Colors.white),
-                  columnWidths: {
-                    0: FlexColumnWidth(1),
-                    1: FlexColumnWidth(1),
-                    2: FlexColumnWidth(1),
-                  },
-                  children: [
-                    TableRow(
-                      children: [
+                Padding(
+                  padding: EdgeInsets.all(24),
+                  child: Table(
+                    border: TableBorder.all(color: Colors.white),
+                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                    columnWidths: {
+                      0: FixedColumnWidth(50),
+                      1: FlexColumnWidth(),
+                      2: FlexColumnWidth(),
+                      3: FlexColumnWidth()
+                    },
+                    children: [
+                      TableRow(children: [
                         TableCell(
-                          child: Text(
-                            "ID",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                        TableCell(
-                          child: Text(
-                            "Gracze",
-                            style: TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Text(
-                            "Wynik",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        )
-                      ],
-                    ),
-                    TableRow(
-                      children: [
-                        TableCell(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              fetchAllGames();
-                            },
+                          child: Center(
                             child: Text(
-                              'Test',
+                              "ID",
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
                         TableCell(
-                          child: Text(
-                            "Gracze",
-                            style: TextStyle(
-                              color: Colors.white,
+                          child: Center(
+                            child: Text(
+                              "Gracze",
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
                         TableCell(
-                          child: Text(
-                            "Wynik",
-                            style: TextStyle(color: Colors.white),
+                          child: Center(
+                            child: Text(
+                              "Wynik partii",
+                              style: TextStyle(color: Colors.white),
+                            ),
                           ),
-                        )
-                      ],
-                    ),
-                  ],
-                )
+                        ),
+                        TableCell(child: Container()),
+                      ]),
+                      for (int i = 0; i < allGames.length; i++)
+                        TableRow(children: [
+                          TableCell(
+                            child: Center(
+                              child: Text(
+                                "${i + 1}",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            child: Column(
+                              children: [
+                                Text(
+                                  "-",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                Text(
+                                  "-",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
+                          ),
+                          TableCell(
+                            child: Center(
+                              child: Text(
+                                allGames[i]['gameResult'],
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          TableCell(
+                            child: TextButton(
+                              onPressed: () {},
+                              child: Text(
+                                "Obejrzyj",
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ])
+                    ],
+                  ),
+                ),
               ],
             ),
           );
