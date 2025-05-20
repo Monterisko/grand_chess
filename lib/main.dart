@@ -24,6 +24,7 @@ void main() async {
 1. e4 e5
 ''';
   importFromPGN(pgnContent);
+
   runApp(const MyApp());
 }
 

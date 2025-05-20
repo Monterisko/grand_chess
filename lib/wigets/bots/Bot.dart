@@ -9,7 +9,7 @@ abstract class Bot {
   final String difficulty;
   BuildContext context;
   final List<List<String?>> board;
-  final Function() makeMove;
+  final Function(String?) makeMove;
   Bot(
       {required this.difficulty,
       required this.board,
@@ -17,7 +17,7 @@ abstract class Bot {
       required this.context});
 
   factory Bot.createBot(GameSettings settings, List<List<String?>> board,
-      Function() makeMove, Function() update, BuildContext context) {
+      Function(String?) makeMove, Function() update, BuildContext context) {
     switch (settings.difficulty) {
       case "easy":
         return BotEasy(board: board, makeMove: makeMove, context: context);
@@ -34,7 +34,7 @@ abstract class Bot {
 
   void makeMoveAI();
   List<Move> getLegalMovesForAI(String color);
-  void executeMove(Move move);
+  void executeMove(Move move, String? gameID);
 }
 
 class GameSettings {

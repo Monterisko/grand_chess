@@ -73,6 +73,10 @@ void addMove(Move move) {
   moves.add(move);
 }
 
+void setMoveList(List<Move> m) {
+  moves = m;
+}
+
 void clearMoves() {
   moves.clear();
 }

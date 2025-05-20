@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:grand_chess/auth/Auth.dart';
 import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
@@ -26,6 +27,7 @@ class BoardMove extends State<Board> {
   late dynamic bot;
   late dynamic channel;
   late GameSettings settings;
+  late String firebaseID;
 
   BoardMove();
 
@@ -94,11 +96,24 @@ class BoardMove extends State<Board> {
     });
   }
 
+  Future<void> _createGame() async {
+    if (isUserLogged()) {
+      final id = await createNewGame(
+        whitePlayerId: getUserId(),
+        blackPlayerId: settings.difficulty == "player" ? getUserId() : null,
+      );
+      setState(() {
+        firebaseID = id;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    addToGamesCollection({'gameResult': "", 'moves': []});
     settings = widget.settings;
+    _createGame();
+
     if (settings.isAgainstAI) {
       bot = Bot.createBot(settings, board, makeMove, updateBoard, context);
       if (settings.difficulty == "hard") {
@@ -332,6 +347,15 @@ class BoardMove extends State<Board> {
             return;
           }
           if (isCheckMate(board, currentTurn == "white" ? "black" : "white")) {
+            updateGame(
+              gameId: firebaseID,
+              from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+              to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+              piece: board[fromRow!][fromCol!]!,
+              color: currentTurn,
+              status: "finished",
+              result: currentTurn == "white" ? "1-0" : "0-1",
+            );
             showDialog(
                 context: context,
                 builder: (BuildContext context) {
@@ -378,14 +402,26 @@ class BoardMove extends State<Board> {
             ),
             from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
-        addMove(Move(
+        addMove(
+          Move(
             isCapture: move != null,
             piece: Image.asset(
               "assets/${board[toRow][toCol]}.png",
               scale: 1.8,
             ),
             from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
-            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+          ),
+        );
+        if (isUserLogged()) {
+          updateGame(
+            gameId: firebaseID,
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+            color: currentTurn,
+            piece: board[toRow][toCol]!,
+          );
+        }
         fromRow = null;
         fromCol = null;
         currentTurn = currentTurn == "white" ? "black" : "white";
@@ -457,28 +493,41 @@ class BoardMove extends State<Board> {
           }
         }
         previousMove = Move(
+          color: currentTurn,
+          figure: board[toRow][toCol]!,
+          isCapture: move != null,
+          piece: Image.asset(
+            "assets/${board[toRow][toCol]}.png",
+            scale: 1.8,
+          ),
+          from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+          to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+        );
+        addMove(
+          Move(
+            isCapture: move != null,
+            piece: Image.asset(
+              "assets/${board[toRow][toCol]}.png",
+              scale: 1.8,
+            ),
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+          ),
+        );
+        if (isUserLogged()) {
+          updateGame(
+            gameId: firebaseID,
+            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
             color: currentTurn,
-            figure: board[toRow][toCol]!,
-            isCapture: move != null,
-            piece: Image.asset(
-              "assets/${board[toRow][toCol]}.png",
-              scale: 1.8,
-            ),
-            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
-            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
-        addMove(Move(
-            isCapture: move != null,
-            piece: Image.asset(
-              "assets/${board[toRow][toCol]}.png",
-              scale: 1.8,
-            ),
-            from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
-            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}"));
+            piece: board[toRow][toCol]!,
+          );
+        }
         fromRow = null;
         fromCol = null;
 
         if (bot is BotEasy) {
-          makeMove();
+          makeMove(firebaseID);
         }
         if (bot is BotHard) {
           (bot as BotHard).getBestMove(moves);
@@ -600,7 +649,7 @@ class BoardMove extends State<Board> {
     }
   }
 
-  void makeMove() {
+  void makeMove(String? gameID) {
     List<Move> legalMoves = bot.getLegalMovesForAI("black");
     if (isCheck(board, "black")) {
       legalMoves.where((move) => isMoveSafe(board, move, "black")).toList();
@@ -614,14 +663,14 @@ class BoardMove extends State<Board> {
         }
         Move move = safeMoves[Random().nextInt(safeMoves.length)];
         addMove(move);
-        bot.executeMove(move);
+        bot.executeMove(move, gameID);
         return;
       }
     }
     if (legalMoves.isNotEmpty) {
       Move move = legalMoves[Random().nextInt(legalMoves.length)];
       addMove(move);
-      bot.executeMove(move);
+      bot.executeMove(move, gameID);
     }
   }
 }

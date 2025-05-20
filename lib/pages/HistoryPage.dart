@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grand_chess/database/Database.dart';
+import 'package:grand_chess/pages/WatchPage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 
 class HistoryPage extends StatefulWidget {
@@ -87,47 +88,58 @@ class HistoryPageState extends State<HistoryPage> {
                         TableCell(child: Container()),
                       ]),
                       for (int i = 0; i < allGames.length; i++)
-                        TableRow(children: [
-                          TableCell(
-                            child: Center(
-                              child: Text(
-                                "${i + 1}",
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ),
-                          TableCell(
-                            child: Column(
-                              children: [
-                                Text(
-                                  "-",
+                        TableRow(
+                          children: [
+                            TableCell(
+                              child: Center(
+                                child: Text(
+                                  "${i + 1}",
                                   style: TextStyle(color: Colors.white),
                                 ),
-                                Text(
-                                  "-",
+                              ),
+                            ),
+                            TableCell(
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "-",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                  Text(
+                                    "-",
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            TableCell(
+                              child: Center(
+                                child: Text(
+                                  allGames[i]['result'] ?? "W trakcie",
                                   style: TextStyle(color: Colors.white),
                                 ),
-                              ],
-                            ),
-                          ),
-                          TableCell(
-                            child: Center(
-                              child: Text(
-                                allGames[i]['gameResult'],
-                                style: TextStyle(color: Colors.white),
                               ),
                             ),
-                          ),
-                          TableCell(
-                            child: TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                "Obejrzyj",
-                                style: TextStyle(color: Colors.white),
+                            TableCell(
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => WatchPage(
+                                        gameId: allGames[i]['id'],
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: Text(
+                                  "Obejrzyj",
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             ),
-                          ),
-                        ])
+                          ],
+                        )
                     ],
                   ),
                 ),

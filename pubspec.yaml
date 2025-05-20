@@ -41,6 +41,7 @@ dependencies:
   cloud_firestore: ^5.6.6
   firebase_auth: ^5.5.2
   chess: ^0.8.1
+  intl: ^0.20.2
 
 
 dev_dependencies:

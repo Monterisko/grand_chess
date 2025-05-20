@@ -19,7 +19,7 @@ class BotHard extends Bot {
       : super(context: context);
 
   @override
-  void executeMove(Move move) {
+  void executeMove(Move move, String? gameID) {
     int fromRow = 8 - int.parse(move.from[1]);
     int fromCol = move.from.codeUnitAt(0) - 97;
     int toRow = 8 - int.parse(move.to[1]);
@@ -47,7 +47,7 @@ class BotHard extends Bot {
           to: "${text[1].substring(2, 3)}${text[1].substring(3, 4)}");
 
       addMove(move);
-      executeMove(move);
+      executeMove(move, null);
       stockfishBot.sendCommand(
           "position startpos moves ${moves.map((e) => e.from + e.to).join(' ')}");
       if (isCheckMate(board, "white")) {

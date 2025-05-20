@@ -221,7 +221,7 @@ Widget play(context) {
                           MaterialPageRoute(
                               builder: (context) => Board(
                                     settings: GameSettings(
-                                        difficulty: "player", isHotseat: true),
+                                        difficulty: "local", isHotseat: true),
                                   )));
                     },
                   ),

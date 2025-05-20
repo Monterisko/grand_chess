@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/wigets/bots/Bot.dart';
@@ -13,7 +15,7 @@ Move getRandom(List<Move> legalMoves) {
 class BotEasy extends Bot {
   BotEasy(
       {required List<List<String?>> board,
-      required Function() makeMove,
+      required Function(String?) makeMove,
       required BuildContext context})
       : super(
             difficulty: 'easy',
@@ -23,7 +25,7 @@ class BotEasy extends Bot {
 
   @override
   void makeMoveAI() {
-    makeMove();
+    makeMove(null);
   }
 
   @override
@@ -54,13 +56,22 @@ class BotEasy extends Bot {
   }
 
   @override
-  void executeMove(Move move) {
+  void executeMove(Move move, String? gameID) {
     int fromRow = 8 - int.parse(move.from[1]);
     int fromCol = move.from.codeUnitAt(0) - 97;
     int toRow = 8 - int.parse(move.to[1]);
     int toCol = move.to.codeUnitAt(0) - 97;
     board[toRow][toCol] = board[fromRow][fromCol];
     board[fromRow][fromCol] = null;
+    if (isUserLogged()) {
+      updateGame(
+        gameId: gameID!,
+        from: move.from,
+        to: move.to,
+        color: "black",
+        piece: move.figure,
+      );
+    }
   }
 }
 
