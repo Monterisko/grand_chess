@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:grand_chess/auth/Auth.dart';
 import 'package:grand_chess/components/ModelGame.dart';
-import 'package:grand_chess/components/ModelMove.dart';
 import 'package:grand_chess/components/Move.dart';
 import 'package:grand_chess/components/User.dart';
 import 'package:intl/date_symbol_data_local.dart';
