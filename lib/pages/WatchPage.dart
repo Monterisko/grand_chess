@@ -118,6 +118,13 @@ class _WatchPageState extends State<WatchPage> {
             );
           }).toList();
           setMoveList(moves);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              while (currentIndex < moves.length - 1) {
+                nextMove();
+              }
+            }
+          });
 
           return Scaffold(
             body: LayoutBuilder(

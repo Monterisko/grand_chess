@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/auth/AuthError.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/pages/RegisterPage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
@@ -12,8 +14,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  late String? _email;
-  late String? _password;
+  String? _email;
+  String? _password;
+  AuthError error = AuthError(message: "", code: "");
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,18 +69,21 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                               decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white),
-                                ),
-                                errorBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.red),
-                                ),
-                                hintText: 'Wpisz email',
-                              ),
+                                  border: OutlineInputBorder(),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.white),
+                                  ),
+                                  errorBorder: OutlineInputBorder(
+                                    borderSide: BorderSide(color: Colors.red),
+                                  ),
+                                  hintText: 'Wpisz email',
+                                  errorText: (error.code == 'invalid-email') ||
+                                          (error.code == 'user-not-found')
+                                      ? error.message
+                                      : null),
                               onChanged: (value) {
                                 _email = value;
                               },
@@ -106,6 +112,9 @@ class _LoginPageState extends State<LoginPage> {
                                 borderSide: BorderSide(color: Colors.red),
                               ),
                               hintText: 'Wpisz hasło',
+                              errorText: error.code == 'invalid-credential'
+                                  ? error.message
+                                  : null,
                             ),
                             onChanged: (value) {
                               _password = value;
@@ -119,16 +128,50 @@ class _LoginPageState extends State<LoginPage> {
                                   if (_email != null && _password != null) {
                                     signInWithEmailAndPassword(
                                             _email!, _password!, context)
-                                        .whenComplete(
-                                      () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => HomePage(),
-                                          ),
-                                        );
-                                      },
-                                    );
+                                        .then((userCredential) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => HomePage(),
+                                        ),
+                                      );
+                                    }).onError((e, stackTrace) {
+                                      setState(() {
+                                        error.message =
+                                            "Wystąpił błąd logowania.";
+                                      });
+                                      if (e is FirebaseAuthException) {
+                                        switch (e.code) {
+                                          case 'user-not-found':
+                                            setState(() {
+                                              error.message =
+                                                  "Nie znaleziono użytkownika o tym adresie e-mail.";
+                                              error.code = 'user-not-found';
+                                            });
+                                            break;
+                                          case 'invalid-credential':
+                                            setState(() {
+                                              error.message =
+                                                  "Nieprawidłowe hasło.";
+                                              error.code = 'invalid-credential';
+                                            });
+                                            break;
+                                          case 'invalid-email':
+                                            setState(() {
+                                              error.message =
+                                                  "Nieprawidłowy adres e-mail.";
+                                              error.code = 'invalid-email';
+                                            });
+                                            break;
+                                          default:
+                                            setState(() {
+                                              error.message =
+                                                  e.message ?? error.message;
+                                            });
+                                            break;
+                                        }
+                                      }
+                                    });
                                   }
                                 },
                                 style: ElevatedButton.styleFrom(

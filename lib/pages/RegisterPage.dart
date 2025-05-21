@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/auth/AuthError.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/MenuBar.dart';
 
@@ -11,9 +13,11 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  late String? _name;
-  late String? _email;
-  late String? _password;
+  AuthError error = AuthError(message: "", code: "");
+
+  String? _name;
+  String? _email;
+  String? _password;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,18 +99,22 @@ class _RegisterPageState extends State<RegisterPage> {
                               return null;
                             },
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red),
-                              ),
-                              hintText: 'Wpisz email',
-                            ),
+                                border: OutlineInputBorder(),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                                hintText: 'Wpisz email',
+                                errorText:
+                                    error.code == 'email-already-in-use' ||
+                                            error.code == 'invalid-email'
+                                        ? error.message
+                                        : null),
                             onChanged: (value) {
                               _email = value;
                             },
@@ -129,18 +137,20 @@ class _RegisterPageState extends State<RegisterPage> {
                               _password = value;
                             },
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.white),
-                              ),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red),
-                              ),
-                              hintText: 'Wpisz hasło',
-                            ),
+                                border: OutlineInputBorder(),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.white),
+                                ),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red),
+                                ),
+                                hintText: 'Wpisz hasło',
+                                errorText: error.code == 'weak-password'
+                                    ? error.message
+                                    : null),
                             style: TextStyle(color: Colors.white),
                           ),
                           Center(
@@ -151,13 +161,55 @@ class _RegisterPageState extends State<RegisterPage> {
                                       _password == null) {
                                     return;
                                   }
+
                                   createAccountByPassword(
                                           _name!, _email!, _password!, context)
-                                      .whenComplete(() {
+                                      .then((userCredential) {
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => HomePage()));
+                                  }).onError((e, stackTrace) {
+                                    setState(() {
+                                      error.message =
+                                          "Wystąpił błąd logowania.";
+                                    });
+                                    if (e is FirebaseAuthException) {
+                                      switch (e.code) {
+                                        case 'email-already-in-use':
+                                          setState(() {
+                                            error.message =
+                                                "Podany email już isnieje.";
+                                            error.code = 'email-already-in-use';
+                                          });
+                                          break;
+                                        case 'invalid-credential':
+                                          setState(() {
+                                            error.message =
+                                                "Nieprawidłowe hasło.";
+                                            error.code = 'invalid-credential';
+                                          });
+                                          break;
+                                        case 'invalid-email':
+                                          setState(() {
+                                            error.message =
+                                                "Nieprawidłowy adres e-mail.";
+                                            error.code = 'invalid-email';
+                                          });
+                                          break;
+                                        case 'weak-password':
+                                          setState(() {
+                                            error.message = "Zbyt słabe hasło";
+                                            error.code = 'weak-password';
+                                          });
+                                        default:
+                                          setState(() {
+                                            error.message =
+                                                e.message ?? error.message;
+                                          });
+                                          break;
+                                      }
+                                    }
                                   });
                                 },
                                 style: ElevatedButton.styleFrom(
