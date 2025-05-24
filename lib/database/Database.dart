@@ -13,12 +13,20 @@ Future<void> addUser(String userID, String name) async {
   await _firestore.collection('users').doc(userID).set({'name': name});
 }
 
-Future<String> getUserNameFromDatabase(String id) async {
+Future<String> getUserNameFromDatabase(String? id) async {
   DocumentSnapshot doc = await _firestore.collection('users').doc(id).get();
   if (doc.exists) {
     return doc['name'] as String;
   }
   return "Nieznany";
+}
+
+Future<String?> getUsernameFromDatabase(String? id) async {
+  DocumentSnapshot doc = await _firestore.collection('users').doc(id).get();
+  if (doc.exists) {
+    return doc['name'] as String;
+  }
+  return null;
 }
 
 Future<void> deleteUser(String id) async {
@@ -36,16 +44,25 @@ Future<List<Map<String, dynamic>>> fetchAllGames() async {
       .collection('users')
       .doc(getUserId())
       .collection('games')
+      .orderBy('createdAt', descending: true)
       .get();
-  final docs = snap.docs;
-  for (var doc in docs) {
-    result.add(doc.data());
-  }
-  return result;
+
+  return snap.docs.map((doc) => doc.data()).toList();
+}
+
+Stream<List<Map<String, dynamic>>> streamAllGames() {
+  return _firestore
+      .collection('users')
+      .doc(getUserId())
+      .collection('games')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map((doc) => doc.data()).toList());
 }
 
 Future<String> createNewGame({
   required String whitePlayerId,
+  required String gameType,
   String? blackPlayerId,
 }) async {
   final newGameRef =
@@ -53,6 +70,7 @@ Future<String> createNewGame({
 
   final newGame = ModelGame(
     id: newGameRef.id,
+    gameType: gameType,
     whitePlayerId: whitePlayerId,
     blackPlayerId: blackPlayerId,
     players: [whitePlayerId],
@@ -72,6 +90,7 @@ Future<void> updateGame({
   required String gameId,
   required String from,
   required String to,
+  required bool isCapture,
   required String color,
   required String piece,
   String? status,
@@ -80,6 +99,7 @@ Future<void> updateGame({
   final move = {
     'from': from,
     'to': to,
+    'isCapture': isCapture,
     'color': color,
     'piece': piece,
     'timestamp': formatTimestamp(Timestamp.now()),
@@ -171,6 +191,9 @@ Future<List<Move>> fetchMoves(String gameId) async {
       Move(
         from: x['from'],
         to: x['to'],
+        isCapture: x['isCapture'],
+        color: x['color'],
+        figure: x['piece'],
         piece: Image.asset(
           "assets/${x['piece']}.png",
           scale: 1.8,

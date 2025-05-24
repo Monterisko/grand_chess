@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/components/Dialog.dart';
 import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/HomePage.dart';
 import 'package:grand_chess/wigets/Board.dart';
@@ -25,7 +26,7 @@ class BoardMove extends State<Board> {
   int? fromCol;
   final ScrollController controller = ScrollController();
   late dynamic bot;
-  late dynamic channel;
+  late WebSocketChannel channel;
   late GameSettings settings;
   late String firebaseID;
 
@@ -68,14 +69,19 @@ class BoardMove extends State<Board> {
   int? gameId;
 
   Future<void> waitForGameId() async {
-    channel.stream.listen((message) {
-      final data = json.decode(message);
-      if (data["type"] == "game_id") {
-        setState(() {
-          gameId = data["game_id"];
-        });
-      }
-    });
+    channel.stream.listen(
+      (message) {
+        final data = json.decode(message);
+        if (data["type"] == "game_id") {
+          setState(
+            () {
+              gameId = data["game_id"];
+            },
+          );
+        }
+      },
+      onError: (e) {},
+    );
 
     await Future.doWhile(() async {
       await Future.delayed(const Duration(milliseconds: 100));
@@ -100,6 +106,7 @@ class BoardMove extends State<Board> {
     if (isUserLogged()) {
       final id = await createNewGame(
         whitePlayerId: getUserId(),
+        gameType: settings.difficulty,
         blackPlayerId: settings.difficulty == "player" ? getUserId() : null,
       );
       setState(() {
@@ -111,6 +118,7 @@ class BoardMove extends State<Board> {
   @override
   void initState() {
     super.initState();
+    if (!isUserLogged()) firebaseID = "";
     settings = widget.settings;
     _createGame();
 
@@ -127,79 +135,117 @@ class BoardMove extends State<Board> {
     }
     if (settings.isOnline) {
       channel = WebSocketChannel.connect(Uri.parse("ws://localhost:8000/ws"));
-      waitForGameId().then((_) {
-        channel.sink.close(status.normalClosure);
-        channel = WebSocketChannel.connect(
-            Uri.parse("ws://localhost:8000/ws/$gameId"));
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                content: Text("Oczekiwanie na przeciwnika"),
-              );
-            });
-
-        channel.stream.listen((message) {
-          final data = json.decode(message);
-          if (data["type"] == "start_game") {
-            Navigator.of(context).pop();
-          }
-          if (data["type"] == "end_game") {
-            checkmate(context, settings);
-          }
-          if (data["type"] == "move") {
-            setState(() {
-              addMove(Move(
-                  isCapture: data["isCapture"],
-                  piece:
-                      Image.asset("assets/${data["figure"]}.png", scale: 1.8),
-                  from: data["from"],
-                  to: data["to"]));
-              board[8 - int.parse(data["to"][1])]
-                  [data["to"][0].codeUnitAt(0) - 97] = data["figure"];
-              board[8 - int.parse(data["from"][1])]
-                  [data["from"][0].codeUnitAt(0) - 97] = null;
-              turn = (turn == "white") ? "black" : "white";
-            });
-          }
-          waitForColor(data);
-          if (data["type"] == "player_left") {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text("Koniec gry"),
-                    content: Text("Przeciwnik opuścił grę"),
-                    actions: [
-                      TextButton(
-                        child: Text("Zagraj ponownie"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          clearMoves();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => Board(
-                                        settings: settings,
-                                      )));
-                        },
-                      ),
-                      TextButton(
-                        child: Text("Powrót do menu"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => HomePage()));
-                        },
-                      )
-                    ],
+      channel.ready.onError(
+        (error, stackTrace) {
+          showMessage(
+            context,
+            "WebSocket Error",
+            "Błąd łaczenia z WebSocketem",
+            [
+              play(context, Colors.black),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomePage(),
+                    ),
                   );
-                });
-          }
-        });
-      });
+                },
+                child: Text(
+                  "Powrót na strónę główną",
+                  style: TextStyle(color: Colors.black),
+                ),
+              )
+            ],
+          );
+        },
+      );
+      waitForGameId().then(
+        (_) {
+          channel.sink.close(status.normalClosure);
+          channel = WebSocketChannel.connect(
+              Uri.parse("ws://localhost:8000/ws/$gameId"));
+          showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  content: Text("Oczekiwanie na przeciwnika"),
+                );
+              });
+
+          channel.stream.listen(
+            (message) {
+              final data = json.decode(message);
+              if (data["type"] == "start_game") {
+                Navigator.of(context).pop();
+              }
+              if (data["type"] == "end_game") {
+                checkmate(context, settings);
+              }
+              if (data["type"] == "move") {
+                setState(
+                  () {
+                    addMove(Move(
+                        isCapture: data["isCapture"],
+                        piece: Image.asset("assets/${data["figure"]}.png",
+                            scale: 1.8),
+                        from: data["from"],
+                        to: data["to"]));
+                    board[8 - int.parse(data["to"][1])]
+                        [data["to"][0].codeUnitAt(0) - 97] = data["figure"];
+                    board[8 - int.parse(data["from"][1])]
+                        [data["from"][0].codeUnitAt(0) - 97] = null;
+                    turn = (turn == "white") ? "black" : "white";
+                  },
+                );
+              }
+              waitForColor(data);
+              if (data["type"] == "player_left") {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text("Koniec gry"),
+                      content: Text("Przeciwnik opuścił grę"),
+                      actions: [
+                        TextButton(
+                          child: Text("Zagraj ponownie"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            clearMoves();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => Board(
+                                  settings: settings,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Powrót do menu"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HomePage(),
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            onError: (e) {},
+          );
+        },
+      );
     }
     initializeBoard();
   }
@@ -351,6 +397,7 @@ class BoardMove extends State<Board> {
               gameId: firebaseID,
               from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
               to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+              isCapture: move != null ? true : false,
               piece: board[fromRow!][fromCol!]!,
               color: currentTurn,
               status: "finished",
@@ -418,6 +465,7 @@ class BoardMove extends State<Board> {
             gameId: firebaseID,
             from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+            isCapture: move != null ? true : false,
             color: currentTurn,
             piece: board[toRow][toCol]!,
           );
@@ -519,6 +567,7 @@ class BoardMove extends State<Board> {
             gameId: firebaseID,
             from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+            isCapture: move != null ? true : false,
             color: currentTurn,
             piece: board[toRow][toCol]!,
           );
@@ -532,13 +581,13 @@ class BoardMove extends State<Board> {
         if (bot is BotHard) {
           (bot as BotHard).getBestMove(moves);
           setState(() {
-            (bot as BotHard).makeMoveAI();
+            (bot as BotHard).makeMoveAI(firebaseID);
           });
         }
         if (bot is BotMedium) {
           (bot as BotMedium).getBestMove(moves);
           setState(() {
-            (bot as BotMedium).makeMoveAI();
+            (bot as BotMedium).makeMoveAI(firebaseID);
           });
         }
       }
@@ -614,16 +663,26 @@ class BoardMove extends State<Board> {
           }
         }
         previousMove = Move(
-            color: turn,
-            figure: board[toRow][toCol]!,
-            isCapture: move != null,
-            piece: Image.asset(
-              "assets/${board[toRow][toCol]}.png",
-              scale: 1.8,
-            ),
+          color: turn,
+          figure: board[toRow][toCol]!,
+          isCapture: move != null ? true : false,
+          piece: Image.asset(
+            "assets/${board[toRow][toCol]}.png",
+            scale: 1.8,
+          ),
+          from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
+          to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+        );
+        if (isUserLogged()) {
+          updateGame(
+            gameId: firebaseID,
             from: "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",
-            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
-
+            to: "${String.fromCharCode(97 + toCol)}${8 - toRow}",
+            isCapture: move != null ? true : false,
+            color: turn,
+            piece: board[toRow][toCol]!,
+          );
+        }
         channel.sink.add(json.encode({
           "type": "move",
           "from": "${String.fromCharCode(97 + fromCol!)}${8 - fromRow!}",

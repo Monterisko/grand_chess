@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:grand_chess/Stockfish.dart';
+import 'package:grand_chess/auth/Auth.dart';
+import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/wigets/BoardMove.dart';
 import 'package:grand_chess/wigets/Game.dart';
 import 'package:grand_chess/components/Move.dart';
@@ -34,18 +36,32 @@ class BotHard extends Bot {
   }
 
   @override
-  void makeMoveAI() {
+  void makeMoveAI(String gameID) {
     getBestMove(moves);
     Future.delayed(Duration(seconds: 1), () {
       List<String> text = stockfishBot.getBestMove().split(" ");
       Move move = Move(
-          piece: Image.asset(
-            "assets/${board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]}.png",
-            scale: 1.8,
-          ),
-          from: "${text[1].substring(0, 1)}${text[1].substring(1, 2)}",
-          to: "${text[1].substring(2, 3)}${text[1].substring(3, 4)}");
-
+        piece: Image.asset(
+          "assets/${board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]}.png",
+          scale: 1.8,
+        ),
+        from: "${text[1].substring(0, 1)}${text[1].substring(1, 2)}",
+        to: "${text[1].substring(2, 3)}${text[1].substring(3, 4)}",
+        isCapture:
+            board[8 - int.parse(text[1][3])][text[1].codeUnitAt(2) - 97] != null
+                ? true
+                : false,
+      );
+      if (isUserLogged()) {
+        updateGame(
+          gameId: gameID,
+          from: move.from,
+          to: move.to,
+          isCapture: move.isCapture,
+          color: 'black',
+          piece: board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]!,
+        );
+      }
       addMove(move);
       executeMove(move, null);
       stockfishBot.sendCommand(

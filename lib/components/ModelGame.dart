@@ -3,6 +3,7 @@ import 'package:grand_chess/components/ModelMove.dart';
 
 class ModelGame {
   final String id;
+  final String gameType;
   final String? result;
   final String whitePlayerId;
   final String? blackPlayerId;
@@ -15,6 +16,7 @@ class ModelGame {
 
   ModelGame({
     required this.id,
+    required this.gameType,
     this.result,
     required this.whitePlayerId,
     this.blackPlayerId,
@@ -30,6 +32,7 @@ class ModelGame {
     final data = doc.data() as Map<String, dynamic>;
     return ModelGame(
       id: doc.id,
+      gameType: data['gameType'],
       result: data['result'],
       whitePlayerId: data['whitePlayerId'],
       blackPlayerId: data['blackPlayerId'],
@@ -47,6 +50,7 @@ class ModelGame {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
+      'gameType': gameType,
       'result': result,
       'whitePlayerId': whitePlayerId,
       'blackPlayerId': blackPlayerId,

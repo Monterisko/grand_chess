@@ -115,7 +115,7 @@ Widget menuBar(context) {
       });
 }
 
-Widget play(context) {
+Widget play(context, [Color? color]) {
   return TextButton(
     onPressed: () {
       showDialog(
@@ -237,6 +237,6 @@ Widget play(context) {
             );
           });
     },
-    child: Text('Nowa Gra', style: TextStyle(color: Colors.white)),
+    child: Text('Nowa Gra', style: TextStyle(color: color ?? Colors.white)),
   );
 }

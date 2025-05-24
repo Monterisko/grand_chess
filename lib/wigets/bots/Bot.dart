@@ -32,7 +32,7 @@ abstract class Bot {
     }
   }
 
-  void makeMoveAI();
+  void makeMoveAI(String gameID);
   List<Move> getLegalMovesForAI(String color);
   void executeMove(Move move, String? gameID);
 }

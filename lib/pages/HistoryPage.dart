@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:grand_chess/database/Database.dart';
 import 'package:grand_chess/pages/WatchPage.dart';
@@ -13,19 +15,54 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
+  late final StreamSubscription _gamesSubscription;
   List<Map<String, dynamic>> allGames = [];
+  List<String> whiteNames = [];
+  List<String> blackNames = [];
 
   @override
   void initState() {
     super.initState();
-    fetchGames();
+    listenToGames();
   }
 
-  Future<void> fetchGames() async {
-    final games = await fetchAllGames();
-    setState(() {
-      allGames = games;
+  void listenToGames() {
+    _gamesSubscription = streamAllGames().listen((games) async {
+      List<String> wNames = [];
+      List<String> bNames = [];
+
+      for (var game in games) {
+        final type = game['gameType'];
+        if (type == "online") {
+          final whiteName =
+              await getUsernameFromDatabase(game['whitePlayerId']);
+          final blackName =
+              await getUsernameFromDatabase(game['blackPlayerId']);
+          wNames.add(whiteName ?? "Bot");
+          bNames.add(blackName ?? "Bot");
+        } else if (type == "local") {
+          wNames.add("Gracz 1");
+          bNames.add("Gracz 2");
+        } else {
+          final whiteName =
+              await getUsernameFromDatabase(game['whitePlayerId']);
+          wNames.add(whiteName ?? "Ty");
+          bNames.add("Bot ($type)");
+        }
+      }
+
+      setState(() {
+        allGames = games;
+        whiteNames = wNames;
+        blackNames = bNames;
+      });
     });
+  }
+
+  @override
+  void dispose() {
+    _gamesSubscription.cancel();
+    super.dispose();
   }
 
   @override
@@ -102,11 +139,11 @@ class HistoryPageState extends State<HistoryPage> {
                               child: Column(
                                 children: [
                                   Text(
-                                    "-",
+                                    whiteNames.length > i ? whiteNames[i] : "-",
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   Text(
-                                    "-",
+                                    blackNames.length > i ? blackNames[i] : "-",
                                     style: TextStyle(color: Colors.white),
                                   ),
                                 ],

@@ -24,8 +24,8 @@ class BotEasy extends Bot {
             context: context);
 
   @override
-  void makeMoveAI() {
-    makeMove(null);
+  void makeMoveAI(String? gameID) {
+    makeMove(gameID);
   }
 
   @override
@@ -68,6 +68,7 @@ class BotEasy extends Bot {
         gameId: gameID!,
         from: move.from,
         to: move.to,
+        isCapture: move.isCapture,
         color: "black",
         piece: move.figure,
       );

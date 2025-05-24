@@ -59,15 +59,22 @@ class _WatchPageState extends State<WatchPage> {
   void previousMove() {
     if (currentIndex < 0) return;
     Move m = moves[currentIndex--];
-    List<int> fromCoords = algebraicToCoords(m.from);
-    List<int> toCoords = algebraicToCoords(m.to);
-    move(toCoords[0], toCoords[1], fromCoords[0], fromCoords[1]);
+    if (m.isCapture) {
+      List<int> fromCoords = algebraicToCoords(m.from);
+      List<int> toCoords = algebraicToCoords(m.to);
+      move(toCoords[0], toCoords[1], fromCoords[0], fromCoords[1],
+          moves[currentIndex].figure);
+    } else {
+      List<int> fromCoords = algebraicToCoords(m.from);
+      List<int> toCoords = algebraicToCoords(m.to);
+      move(toCoords[0], toCoords[1], fromCoords[0], fromCoords[1]);
+    }
   }
 
-  void move(int fromRow, int fromCol, int toRow, int toCol) {
+  void move(int fromRow, int fromCol, int toRow, int toCol, [String? piece]) {
     setState(() {
       board[toRow][toCol] = board[fromRow][fromCol];
-      board[fromRow][fromCol] = null;
+      board[fromRow][fromCol] = piece;
     });
   }
 
@@ -112,7 +119,7 @@ class _WatchPageState extends State<WatchPage> {
             return Move(
               from: map['from'] ?? '',
               to: map['to'] ?? '',
-              figure: map['figure'] ?? '',
+              figure: map['piece'] ?? 'white_pawn',
               color: map['color'] ?? '',
               isCapture: map['isCapture'] ?? false,
               piece: Image.asset('assets/${map['piece'] ?? 'white_pawn'}.png',
