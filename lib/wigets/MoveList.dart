@@ -38,7 +38,9 @@ Widget displayMoves(ScrollController controller) {
                           if (index * 2 < moves.length) moves[index * 2].piece,
                           if (index * 2 < moves.length)
                             Text(
-                              moves[index * 2].to,
+                              moves[index * 2].isCapture
+                                  ? "x${moves[index * 2].to}"
+                                  : moves[index * 2].to,
                               style: TextStyle(color: Colors.white),
                             ),
                         ],
@@ -52,7 +54,9 @@ Widget displayMoves(ScrollController controller) {
                             moves[index * 2 + 1].piece,
                           if (index * 2 + 1 < moves.length)
                             Text(
-                              moves[index * 2 + 1].to,
+                              moves[index * 2 + 1].isCapture
+                                  ? "x${moves[index * 2 + 1].to}"
+                                  : moves[index * 2 + 1].to,
                               style: TextStyle(color: Colors.white),
                             ),
                         ],

@@ -20,6 +20,7 @@ class _WatchPageState extends State<WatchPage> {
   List<List<String?>> board = List.generate(8, (_) => List.filled(8, null));
   final ScrollController controller = ScrollController();
   final FocusNode _focusNode = FocusNode();
+  late bool firstRender;
   int currentIndex = -1;
 
   void initializeBoard() {
@@ -85,6 +86,7 @@ class _WatchPageState extends State<WatchPage> {
     super.initState();
     initializeBoard();
     _focusNode.requestFocus();
+    firstRender = true;
   }
 
   @override
@@ -119,9 +121,12 @@ class _WatchPageState extends State<WatchPage> {
           }).toList();
           setMoveList(moves);
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              while (currentIndex < moves.length - 1) {
-                nextMove();
+            if (firstRender) {
+              if (mounted) {
+                while (currentIndex < moves.length - 1) {
+                  nextMove();
+                }
+                firstRender = false;
               }
             }
           });

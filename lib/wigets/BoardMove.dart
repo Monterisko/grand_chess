@@ -404,7 +404,7 @@ class BoardMove extends State<Board> {
             to: "${String.fromCharCode(97 + toCol)}${8 - toRow}");
         addMove(
           Move(
-            isCapture: move != null,
+            isCapture: move != null ? true : false,
             piece: Image.asset(
               "assets/${board[toRow][toCol]}.png",
               scale: 1.8,
