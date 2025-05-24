@@ -38,41 +38,99 @@ class BotHard extends Bot {
   @override
   void makeMoveAI(String gameID) {
     getBestMove(moves);
-    Future.delayed(Duration(seconds: 1), () {
-      List<String> text = stockfishBot.getBestMove().split(" ");
-      Move move = Move(
-        piece: Image.asset(
-          "assets/${board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]}.png",
-          scale: 1.8,
-        ),
-        from: "${text[1].substring(0, 1)}${text[1].substring(1, 2)}",
-        to: "${text[1].substring(2, 3)}${text[1].substring(3, 4)}",
-        isCapture:
-            board[8 - int.parse(text[1][3])][text[1].codeUnitAt(2) - 97] != null
-                ? true
-                : false,
-      );
-      if (isUserLogged()) {
-        updateGame(
-          gameId: gameID,
-          from: move.from,
-          to: move.to,
-          isCapture: move.isCapture,
-          color: 'black',
-          piece: board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]!,
+    Future.delayed(
+      Duration(seconds: 1),
+      () {
+        List<String> text = stockfishBot.getBestMove().split(" ");
+        String bestMoveUci = text[1];
+
+        bool isCastling = bestMoveUci == 'e1g1' ||
+            bestMoveUci == 'e1c1' ||
+            bestMoveUci == 'e8g8' ||
+            bestMoveUci == 'e8c8';
+        if (isCastling) {
+          String rookFrom, rookTo;
+
+          switch (bestMoveUci) {
+            case 'e1g1':
+              rookFrom = 'h1';
+              rookTo = 'f1';
+              break;
+            case 'e1c1':
+              rookFrom = 'a1';
+              rookTo = 'd1';
+              break;
+            case 'e8g8':
+              rookFrom = 'h8';
+              rookTo = 'f8';
+              break;
+            case 'e8c8':
+              rookFrom = 'a8';
+              rookTo = 'd8';
+              break;
+            default:
+              return;
+          }
+
+          Move rookMove = Move(
+            piece: Image.asset(
+              "assets/${board[8 - int.parse(rookFrom[1])][rookFrom.codeUnitAt(0) - 97]}.png",
+              scale: 1.8,
+            ),
+            from: rookFrom,
+            to: rookTo,
+            isCapture: false,
+          );
+          if (isUserLogged()) {
+            updateGame(
+              gameId: gameID,
+              from: rookMove.from,
+              to: rookMove.to,
+              isCapture: rookMove.isCapture,
+              color: 'black',
+              piece: board[8 - int.parse(text[1][1])]
+                  [text[1].codeUnitAt(0) - 97]!,
+            );
+          }
+          executeMove(rookMove, null);
+        }
+        Move move = Move(
+          piece: Image.asset(
+            "assets/${board[8 - int.parse(text[1][1])][text[1].codeUnitAt(0) - 97]}.png",
+            scale: 1.8,
+          ),
+          from: "${text[1].substring(0, 1)}${text[1].substring(1, 2)}",
+          to: "${text[1].substring(2, 3)}${text[1].substring(3, 4)}",
+          isCapture: board[8 - int.parse(text[1][3])]
+                      [text[1].codeUnitAt(2) - 97] !=
+                  null
+              ? true
+              : false,
         );
-      }
-      addMove(move);
-      executeMove(move, null);
-      stockfishBot.sendCommand(
-          "position startpos moves ${moves.map((e) => e.from + e.to).join(' ')}");
-      if (isCheckMate(board, "white")) {
-        GameSettings settings =
-            GameSettings(difficulty: "hard", isAgainstAI: true);
-        checkmate(context, settings);
-      }
-      update();
-    });
+        if (isUserLogged()) {
+          updateGame(
+            gameId: gameID,
+            from: move.from,
+            to: move.to,
+            isCapture: move.isCapture,
+            color: 'black',
+            piece: board[8 - int.parse(text[1][1])]
+                [text[1].codeUnitAt(0) - 97]!,
+          );
+        }
+        addMove(move);
+        executeMove(move, null);
+
+        stockfishBot.sendCommand(
+            "position startpos moves ${moves.map((e) => e.from + e.to).join(' ')}");
+        if (isCheckMate(board, "white")) {
+          GameSettings settings =
+              GameSettings(difficulty: "hard", isAgainstAI: true);
+          checkmate(context, settings);
+        }
+        update();
+      },
+    );
   }
 
   void getBestMove(List<Move> moves) {

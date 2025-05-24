@@ -49,13 +49,50 @@ class BoardMove extends State<Board> {
                 ],
               ),
             ),
-            child: Column(children: [
-              menuBar(context),
-              Row(
+            child: Column(
+              children: [
+                menuBar(context),
+                Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   spacing: 20,
-                  children: [createBoard(), displayMoves(controller)])
-            ]),
+                  children: [
+                    createBoard(
+                      min(MediaQuery.of(context).size.width - 390, 800),
+                    ),
+                    displayMoves(controller),
+                  ],
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: EdgeInsets.only(left: 140),
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        foregroundColor: Colors.transparent,
+                      ),
+                      onPressed: () {
+                        updateGame(
+                          gameId: firebaseID,
+                          from: "",
+                          to: "",
+                          isCapture: false,
+                          piece: "",
+                          color: currentTurn,
+                          status: "finished",
+                          result: currentTurn == "white" ? "0-1" : "1-0",
+                        );
+                        endGame(context, settings);
+                      },
+                      child: Text(
+                        "Poddaj grę",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -288,11 +325,11 @@ class BoardMove extends State<Board> {
     });
   }
 
-  Widget createBoard() {
+  Widget createBoard([double? maxSize]) {
     return ResizableContainer(
       initSize: 400,
       minSize: 400,
-      maxSize: 800,
+      maxSize: maxSize ?? 800,
       child: Center(
         child: Container(
           decoration: BoxDecoration(border: Border.all(color: Colors.black)),
@@ -741,6 +778,41 @@ void checkmate(BuildContext context, GameSettings settings) {
         return AlertDialog(
           title: Text("Koniec gry"),
           content: Text("Szach mat"),
+          actions: [
+            TextButton(
+              child: Text("Zagraj ponownie"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Board(
+                              settings: settings,
+                            )));
+              },
+            ),
+            TextButton(
+              child: Text("Powrót do menu"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                clearMoves();
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HomePage()));
+              },
+            )
+          ],
+        );
+      });
+}
+
+void endGame(BuildContext context, GameSettings settings) {
+  showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Koniec gry"),
+          content: Text("Poddałeś się"),
           actions: [
             TextButton(
               child: Text("Zagraj ponownie"),

@@ -15,6 +15,7 @@ class HistoryPage extends StatefulWidget {
 }
 
 class HistoryPageState extends State<HistoryPage> {
+  final ScrollController _scrollController = ScrollController();
   late final StreamSubscription _gamesSubscription;
   List<Map<String, dynamic>> allGames = [];
   List<String> whiteNames = [];
@@ -27,40 +28,43 @@ class HistoryPageState extends State<HistoryPage> {
   }
 
   void listenToGames() {
-    _gamesSubscription = streamAllGames().listen((games) async {
-      List<String> wNames = [];
-      List<String> bNames = [];
+    _gamesSubscription = streamAllGames().listen(
+      (games) async {
+        List<String> wNames = [];
+        List<String> bNames = [];
 
-      for (var game in games) {
-        final type = game['gameType'];
-        if (type == "online") {
-          final whiteName =
-              await getUsernameFromDatabase(game['whitePlayerId']);
-          final blackName =
-              await getUsernameFromDatabase(game['blackPlayerId']);
-          wNames.add(whiteName ?? "Bot");
-          bNames.add(blackName ?? "Bot");
-        } else if (type == "local") {
-          wNames.add("Gracz 1");
-          bNames.add("Gracz 2");
-        } else {
-          final whiteName =
-              await getUsernameFromDatabase(game['whitePlayerId']);
-          wNames.add(whiteName ?? "Ty");
-          bNames.add("Bot ($type)");
+        for (var game in games) {
+          final type = game['gameType'];
+          if (type == "online") {
+            final whiteName =
+                await getUsernameFromDatabase(game['whitePlayerId']);
+            final blackName =
+                await getUsernameFromDatabase(game['blackPlayerId']);
+            wNames.add(whiteName ?? "Bot");
+            bNames.add(blackName ?? "Bot");
+          } else if (type == "local") {
+            wNames.add("Gracz 1");
+            bNames.add("Gracz 2");
+          } else {
+            final whiteName =
+                await getUsernameFromDatabase(game['whitePlayerId']);
+            wNames.add(whiteName ?? "Ty");
+            bNames.add("Bot ($type)");
+          }
         }
-      }
 
-      setState(() {
-        allGames = games;
-        whiteNames = wNames;
-        blackNames = bNames;
-      });
-    });
+        setState(() {
+          allGames = games;
+          whiteNames = wNames;
+          blackNames = bNames;
+        });
+      },
+    );
   }
 
   @override
   void dispose() {
+    _scrollController.dispose();
     _gamesSubscription.cancel();
     super.dispose();
   }
@@ -87,97 +91,118 @@ class HistoryPageState extends State<HistoryPage> {
                 menuBar(context),
                 Padding(
                   padding: EdgeInsets.all(24),
-                  child: Table(
-                    border: TableBorder.all(color: Colors.white),
-                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                    columnWidths: {
-                      0: FixedColumnWidth(50),
-                      1: FlexColumnWidth(),
-                      2: FlexColumnWidth(),
-                      3: FlexColumnWidth()
-                    },
-                    children: [
-                      TableRow(children: [
-                        TableCell(
-                          child: Center(
-                            child: Text(
-                              "ID",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Center(
-                            child: Text(
-                              "Gracze",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        TableCell(
-                          child: Center(
-                            child: Text(
-                              "Wynik partii",
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        TableCell(child: Container()),
-                      ]),
-                      for (int i = 0; i < allGames.length; i++)
-                        TableRow(
-                          children: [
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  "${i + 1}",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: Column(
+                  child: SizedBox(
+                    height: MediaQuery.of(context).size.height - 200,
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context)
+                          .copyWith(scrollbars: true),
+                      child: RawScrollbar(
+                        controller: _scrollController,
+                        thumbVisibility: true,
+                        trackVisibility: true,
+                        interactive: true,
+                        thumbColor: Colors.white,
+                        trackColor: Colors.grey.shade800,
+                        child: SingleChildScrollView(
+                          controller: _scrollController,
+                          child: Column(
+                            children: [
+                              Table(
+                                border: TableBorder.all(color: Colors.white),
+                                defaultVerticalAlignment:
+                                    TableCellVerticalAlignment.middle,
+                                columnWidths: {
+                                  0: FixedColumnWidth(50),
+                                  1: FlexColumnWidth(),
+                                  2: FlexColumnWidth(),
+                                  3: FlexColumnWidth(),
+                                },
                                 children: [
-                                  Text(
-                                    whiteNames.length > i ? whiteNames[i] : "-",
-                                    style: TextStyle(color: Colors.white),
+                                  TableRow(
+                                    children: [
+                                      Center(
+                                        child: Text(
+                                          "ID",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          "Gracze",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                      Center(
+                                        child: Text(
+                                          "Wynik partii",
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                      Container(),
+                                    ],
                                   ),
-                                  Text(
-                                    blackNames.length > i ? blackNames[i] : "-",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                                  for (int i = 0; i < allGames.length; i++)
+                                    TableRow(
+                                      children: [
+                                        Center(
+                                          child: Text(
+                                            "${i + 1}",
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        Column(
+                                          children: [
+                                            Text(
+                                              whiteNames.length > i
+                                                  ? whiteNames[i]
+                                                  : "-",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                            Text(
+                                              blackNames.length > i
+                                                  ? blackNames[i]
+                                                  : "-",
+                                              style: TextStyle(
+                                                  color: Colors.white),
+                                            ),
+                                          ],
+                                        ),
+                                        Center(
+                                          child: Text(
+                                            allGames[i]['result'] ??
+                                                "W trakcie",
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => WatchPage(
+                                                  gameId: allGames[i]['id'],
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          child: Text(
+                                            "Obejrzyj",
+                                            style:
+                                                TextStyle(color: Colors.white),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                 ],
                               ),
-                            ),
-                            TableCell(
-                              child: Center(
-                                child: Text(
-                                  allGames[i]['result'] ?? "W trakcie",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                            TableCell(
-                              child: TextButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => WatchPage(
-                                        gameId: allGames[i]['id'],
-                                      ),
-                                    ),
-                                  );
-                                },
-                                child: Text(
-                                  "Obejrzyj",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                    ],
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
